@@ -1,0 +1,83 @@
+#
+# DCC Metadata Server - Configuration
+#
+
+###################################################################################################
+# Common
+###################################################################################################
+
+spring:
+  profiles.active: production
+
+# Server
+server:
+  port: 8443
+  ssl:
+    key-store: src/main/conf/keystore.p12
+    key-store-type: PKCS12
+    key-store-password: ***REMOVED***
+
+# Management endpoints
+management:
+  context_path: /admin
+  address: 127.0.0.1
+  port: 8444
+
+---
+
+###################################################################################################
+# Production
+###################################################################################################
+
+# Spring
+spring:
+  profiles: production
+  profiles.include: secure
+  
+# Mongo
+spring.data.mongodb:
+  uri: mongodb://localhost/dcc-metadata
+
+---
+
+###################################################################################################
+# Development
+###################################################################################################
+
+# Spring
+spring:
+  profiles: development
+
+# Mongo
+spring.data.mongodb:
+  uri: mongodb://localhost/dcc-metadata  
+   
+---
+
+###################################################################################################
+# Secure
+###################################################################################################
+
+# Spring
+spring:
+  profiles: secure
+   
+# OAuth authentication server
+auth:
+  server:
+    url: https://***REMOVED***/oauth/check_token
+    clientId: <id>
+    clientsecret: <pass>
+    
+  # Connection retries in case of connection failure 
+  connection:
+  
+    # Max number of retries
+    maxRetries: 5
+    
+    # Initial timeout before the first retry. In milliseconds.
+    initialBackoff: 15000
+    
+    # Multiplier that defines value of consequent timeouts before the next retry. 
+    # E.g. TIMEOUT(n) = TIMEOUT(n-1) * MULTIPLIER
+    multiplier: 2.0

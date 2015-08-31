@@ -1,0 +1,26 @@
+<!--                                             -->
+<!-- DCC Id Server - Logging configuration -->
+<!--                                             -->
+<configuration debug="false">
+  <property name="log.dir" value="${LOG_PATH:-/tmp}"/>
+  <property name="log.name" value="dcc-id-server" />
+  <property name="pattern" value="%date{ISO8601} [%thread] %-5level %logger{20} - %msg%n" />
+
+  <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator">
+    <resetJUL>true</resetJUL>
+  </contextListener>
+
+  <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <File>${log.dir}/${log.name}.log</File>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <FileNamePattern>${log.dir}/${log.name}.%d{yyyy-MM-dd}.log</FileNamePattern>
+    </rollingPolicy>
+    <encoder>
+      <pattern>${pattern}</pattern>
+    </encoder>
+  </appender>
+
+  <root level="INFO">
+    <appender-ref ref="FILE" />
+  </root>
+</configuration>

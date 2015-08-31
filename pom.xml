@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.icgc.dcc</groupId>
+    <artifactId>dcc-parent</artifactId>
+    <version>17</version>
+  </parent>
+
+  <artifactId>dcc-id</artifactId>
+  <version>0.0.11-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <name>${project.artifactId}</name>
+  <description>${project.name}</description>
+
+  <modules>
+    <module>dcc-id-core</module>
+    <module>dcc-id-client</module>
+    <module>dcc-id-server</module>
+  </modules>
+
+  <repositories>
+    <repository>
+      <id>dcc-releases</id>
+      <url>http://seqwaremaven.oicr.on.ca/artifactory/dcc-release</url>
+    </repository>
+
+    <!-- Spring -->
+    <repository>
+      <id>spring-milestones</id>
+      <name>Spring Milestones</name>
+      <url>http://repo.spring.io/milestone</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>spring-snapshots</id>
+      <name>Spring Snapshots</name>
+      <url>http://repo.spring.io/snapshot</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
+
+  <pluginRepositories>
+    <!-- Spring -->
+    <pluginRepository>
+      <id>spring-snapshots</id>
+      <name>Spring Snapshots</name>
+      <url>http://repo.spring.io/snapshot</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </pluginRepository>
+  </pluginRepositories>
+
+  <dependencyManagement>
+    <dependencies>
+      <!-- DCC - Common -->
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>dcc-common-core</artifactId>
+        <version>${dcc-common.version}</version>
+      </dependency>
+
+      <!-- Spring -->
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-dependencies</artifactId>
+        <version>${spring-boot.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.security.oauth</groupId>
+        <artifactId>spring-security-oauth2</artifactId>
+        <version>${spring-security-oauth2.version}</version>
+        <exclusions>
+          <exclusion>
+            <artifactId>jackson-mapper-asl</artifactId>
+            <groupId>org.codehaus.jackson</groupId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.retry</groupId>
+        <artifactId>spring-retry</artifactId>
+        <version>${spring-retry.version}</version>
+      </dependency>
+
+      <!-- Database -->
+      <dependency>
+        <groupId>org.jdbi</groupId>
+        <artifactId>jdbi</artifactId>
+        <version>${jdbi.version}</version>
+      </dependency>
+
+      <!-- Testing - DCC -->
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>dcc-common-test</artifactId>
+        <version>${dcc-common.version}</version>
+        <scope>test</scope>
+      </dependency>
+
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <!-- Utilities -->
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+    </dependency>
+
+  </dependencies>
+
+  <properties>
+    <!-- Versions - DCC -->
+    <dcc-common.version>3.8.8.3</dcc-common.version>
+
+    <!-- Versions - Spring -->
+    <spring-boot.version>1.2.4.RELEASE</spring-boot.version>
+    <spring-security-oauth2.version>2.0.7.RELEASE</spring-security-oauth2.version>
+    <spring-retry.version>1.1.2.RELEASE</spring-retry.version>
+    <spring-maven-plugin.version>1.2.4.RELEASE</spring-maven-plugin.version>
+
+    <!-- Versions - DB -->
+    <jdbi.version>2.53</jdbi.version>
+  </properties>
+
+</project>
