@@ -10,12 +10,12 @@ From the command line:
 
 `cd dcc-identifier`
 
-`mvn clean package -DskipTests -am -pl :dcc-identifier-server`
+`mvn clean package -DskipTests -am -pl :dcc-id-server`
 
 Run
 ---
 
 From the command line:
 
-`java -jar dcc-identifier-server-[VERSION].jar --spring.profiles.active=[development|production]`
+`java -jar dcc-id-server-[VERSION].jar --spring.profiles.active=[development|production] --spring.config.location=src/main/conf/`
 

@@ -34,9 +34,12 @@ spring:
   profiles: production
   profiles.include: secure
   
-# Mongo
-spring.data.mongodb:
-  uri: mongodb://localhost/dcc-metadata
+# JDBC
+spring.datasource:
+  url: jdbc:postgresql://hmongodb-dev.res.oicr.on.ca:5432/dcc_identifier
+  username: dcc
+  password: dcc
+  driverClassName: org.postgresql.Driver
 
 ---
 
@@ -48,10 +51,26 @@ spring.data.mongodb:
 spring:
   profiles: development
 
-# Mongo
-spring.data.mongodb:
-  uri: mongodb://localhost/dcc-metadata  
-   
+# JDBC
+spring.datasource:
+  url: jdbc:h2:mem:dcc_identifier;MODE=PostgreSQL
+  # To get more insight, enable tracing:
+  #  jdbc:h2:mem:dcc_identifier;TRACE_LEVEL_SYSTEM_OUT=4...
+
+  username: username
+  password: password
+  schema: classpath:/sql/schema.sql
+  driveClassName: org.h2.Driver
+
+  # Note that the following database setting *must* be set this way in order to ensure that 
+  # a second connection is never created. This is because the act of creating a 
+  # connection will source the "runscript" identified above. This effectively
+  # will empty the database. This was originally observed when the idle validation
+  # query was doing just this. 
+  validation-query: "/* Invalid query to fail if run! */ I SHOULD NEVER RUN!"
+  minIdle: 1
+  maxIdle: 1
+
 ---
 
 ###################################################################################################

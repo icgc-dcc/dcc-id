@@ -15,26 +15,30 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.id.server.oauth;
+package org.icgc.dcc.id.server.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.retry.support.RetryTemplate;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.oauth2.common.exceptions.InvalidTokenException;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
-import org.springframework.security.oauth2.provider.token.RemoteTokenServices;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 
-public class RetryTokenServices extends RemoteTokenServices {
+import org.icgc.dcc.id.server.repository.BadRequestException;
+import org.icgc.dcc.id.server.repository.NotFoundException;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
-  @Autowired
-  private RetryTemplate retryTemplate;
+@ControllerAdvice
+public class GlobalExceptionHandler {
 
-  @Override
-  @Cacheable("tokens")
-  public OAuth2Authentication loadAuthentication(String accessToken) throws AuthenticationException,
-      InvalidTokenException {
-    return retryTemplate.execute(context -> RetryTokenServices.super.loadAuthentication(accessToken));
+  @ResponseStatus(NOT_FOUND)
+  @ExceptionHandler(NotFoundException.class)
+  public String notFound(Exception e) {
+    return e.getMessage();
+  }
+
+  @ResponseStatus(BAD_REQUEST)
+  @ExceptionHandler(BadRequestException.class)
+  public String badRequest(Exception e) {
+    return e.getMessage();
   }
 
 }

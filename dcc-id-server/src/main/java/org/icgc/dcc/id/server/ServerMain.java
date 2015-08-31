@@ -27,7 +27,7 @@ import org.springframework.boot.autoconfigure.security.SecurityAutoConfiguration
 public class ServerMain {
 
   public static void main(String[] args) throws Exception {
-    SpringApplication.main(args);
+    SpringApplication.run(ServerMain.class, args);
   }
 
 }

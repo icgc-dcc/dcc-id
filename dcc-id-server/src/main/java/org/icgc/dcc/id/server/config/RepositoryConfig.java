@@ -15,26 +15,54 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.id.server.oauth;
+package org.icgc.dcc.id.server.config;
 
+import javax.sql.DataSource;
+
+import org.icgc.dcc.id.server.repository.DonorRepository;
+import org.icgc.dcc.id.server.repository.MutationRepository;
+import org.icgc.dcc.id.server.repository.ProjectRepository;
+import org.icgc.dcc.id.server.repository.SampleRepository;
+import org.icgc.dcc.id.server.repository.SpecimenRepository;
+import org.skife.jdbi.v2.DBI;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.retry.support.RetryTemplate;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.oauth2.common.exceptions.InvalidTokenException;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
-import org.springframework.security.oauth2.provider.token.RemoteTokenServices;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-public class RetryTokenServices extends RemoteTokenServices {
+@Configuration
+public class RepositoryConfig {
 
   @Autowired
-  private RetryTemplate retryTemplate;
+  private DataSource dataSource;
 
-  @Override
-  @Cacheable("tokens")
-  public OAuth2Authentication loadAuthentication(String accessToken) throws AuthenticationException,
-      InvalidTokenException {
-    return retryTemplate.execute(context -> RetryTokenServices.super.loadAuthentication(accessToken));
+  @Bean
+  public DBI dbi() {
+    return new DBI(dataSource);
+  }
+
+  @Bean
+  public ProjectRepository projectRepository() {
+    return dbi().open(ProjectRepository.class);
+  }
+
+  @Bean
+  public DonorRepository donorRepository() {
+    return dbi().open(DonorRepository.class);
+  }
+
+  @Bean
+  public SpecimenRepository specimenRepository() {
+    return dbi().open(SpecimenRepository.class);
+  }
+
+  @Bean
+  public SampleRepository sampleRepository() {
+    return dbi().open(SampleRepository.class);
+  }
+
+  @Bean
+  public MutationRepository mutationRepository() {
+    return dbi().open(MutationRepository.class);
   }
 
 }

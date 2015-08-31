@@ -49,19 +49,19 @@
       <artifactId>spring-retry</artifactId>
     </dependency>
 
-    <!-- JDBI -->
+    <!-- Database -->
     <dependency>
       <groupId>org.jdbi</groupId>
       <artifactId>jdbi</artifactId>
-      <version>${jdbi.version}</version><!--$NO-MVN-MAN-VER$-->
+      <version>${jdbi.version}</version><!--$NO-MVN-MAN-VER$ -->
     </dependency>
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+    </dependency>    
 
 
     <!-- Utilities -->
-    <dependency>
-      <groupId>com.beust</groupId>
-      <artifactId>jcommander</artifactId>
-    </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
@@ -70,6 +70,14 @@
       <groupId>javax.mail</groupId>
       <artifactId>mail</artifactId>
     </dependency>
+
+    <!-- Testing - H2 -->
+    <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+
 
     <!-- Testing - Spring -->
     <dependency>
