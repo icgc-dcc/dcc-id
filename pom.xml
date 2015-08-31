@@ -129,10 +129,10 @@
     <dcc-common.version>3.8.8.3</dcc-common.version>
 
     <!-- Versions - Spring -->
-    <spring-boot.version>1.2.4.RELEASE</spring-boot.version>
+    <spring-boot.version>1.2.5.RELEASE</spring-boot.version>
     <spring-security-oauth2.version>2.0.7.RELEASE</spring-security-oauth2.version>
     <spring-retry.version>1.1.2.RELEASE</spring-retry.version>
-    <spring-maven-plugin.version>1.2.4.RELEASE</spring-maven-plugin.version>
+    <spring-maven-plugin.version>1.2.5.RELEASE</spring-maven-plugin.version>
 
     <!-- Versions - DB -->
     <jdbi.version>2.53</jdbi.version>

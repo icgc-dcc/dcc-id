@@ -1,5 +1,5 @@
 <!--                                             -->
-<!-- DCC Id Server - Logging configuration -->
+<!-- DCC ID Server - Logging configuration       -->
 <!--                                             -->
 <configuration debug="false">
   <property name="log.dir" value="${LOG_PATH:-/tmp}"/>

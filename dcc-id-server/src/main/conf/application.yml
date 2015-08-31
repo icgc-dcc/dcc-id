@@ -12,17 +12,23 @@ spring:
 # Server
 server:
   port: 8443
+  tomcat:
+    max-threads: 200
   ssl:
     key-store: src/main/conf/keystore.p12
     key-store-type: PKCS12
     key-store-password: ***REMOVED***
+
+# Caching
+cache:
+  dir: /tmp/dcc-id
 
 # Management endpoints
 management:
   context_path: /admin
   address: 127.0.0.1
   port: 8444
-
+  
 ---
 
 ###################################################################################################

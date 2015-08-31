@@ -17,8 +17,6 @@
  */
 package org.icgc.dcc.id.server.config;
 
-import lombok.val;
-
 import org.icgc.dcc.id.server.oauth.RetryTokenServices;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -28,14 +26,17 @@ import org.springframework.security.oauth2.provider.token.AccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.DefaultAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.RemoteTokenServices;
 
+import lombok.val;
+
 @Configuration
 @Profile("secure")
 public class TokenServiceConfig {
 
   @Bean
-  public RemoteTokenServices remoteTokenServices(final @Value("${auth.server.url}") String checkTokenUrl,
-      final @Value("${auth.server.clientId}") String clientId,
-      final @Value("${auth.server.clientsecret}") String clientSecret) {
+  public RemoteTokenServices remoteTokenServices(
+      @Value("${auth.server.url}") String checkTokenUrl,
+      @Value("${auth.server.clientId}") String clientId,
+      @Value("${auth.server.clientsecret}") String clientSecret) {
     val remoteTokenServices = new RetryTokenServices();
     remoteTokenServices.setCheckTokenEndpointUrl(checkTokenUrl);
     remoteTokenServices.setClientId(clientId);

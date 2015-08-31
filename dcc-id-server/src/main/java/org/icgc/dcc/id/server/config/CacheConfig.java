@@ -17,63 +17,106 @@
  */
 package org.icgc.dcc.id.server.config;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
+import javax.management.MBeanServer;
 
-import java.util.concurrent.ConcurrentMap;
-
-import org.springframework.cache.Cache;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CachingConfigurerSupport;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.cache.concurrent.ConcurrentMapCache;
-import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
+import org.springframework.cache.ehcache.EhCacheCacheManager;
 import org.springframework.cache.interceptor.KeyGenerator;
 import org.springframework.cache.interceptor.SimpleKeyGenerator;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
+import org.springframework.jmx.support.MBeanServerFactoryBean;
 
-import com.google.common.cache.CacheBuilder;
+import lombok.val;
+import net.sf.ehcache.config.CacheConfiguration;
+import net.sf.ehcache.config.DiskStoreConfiguration;
+import net.sf.ehcache.config.PersistenceConfiguration;
+import net.sf.ehcache.config.PersistenceConfiguration.Strategy;
+import net.sf.ehcache.management.ManagementService;
 
 /**
  * Server wide caching configuration.
  */
-@Lazy
 @Configuration
 @EnableCaching
 public class CacheConfig extends CachingConfigurerSupport {
 
-  /**
-   * Constants.
-   */
-  private static final int CACHE_TTL_MINUTES = 60;
+  @Value("${cache.dir}")
+  private String cacheDir;
 
-  @Override
-  public CacheManager cacheManager() {
-    return new ConcurrentMapCacheManager() {
+  @Bean(destroyMethod = "shutdown")
+  public net.sf.ehcache.CacheManager ehCacheManager() {
+    val tokenCache = new CacheConfiguration();
+    tokenCache.setName("tokens");
+    tokenCache.setTimeToLiveSeconds(3600);
+    tokenCache.setMaxEntriesLocalHeap(1000);
 
-      @Override
-      protected Cache createConcurrentMapCache(String name) {
-        return new ConcurrentMapCache(name, createStore(), false);
-      }
+    val donorCache = new CacheConfiguration();
+    donorCache.setName("donorIds");
+    donorCache.setMaxEntriesLocalDisk(0);
+    donorCache.setMaxEntriesLocalHeap(10000);
+    donorCache.persistence(new PersistenceConfiguration().strategy(Strategy.LOCALTEMPSWAP));
+    donorCache.setEternal(true);
 
-      /**
-       * @return Guava cache instance with a suitable TTL.
-       */
-      private ConcurrentMap<Object, Object> createStore() {
-        return CacheBuilder
-            .newBuilder()
-            .expireAfterWrite(CACHE_TTL_MINUTES, MINUTES)
-            .maximumSize(100)
-            .build()
-            .asMap();
-      }
+    val specimenCache = new CacheConfiguration();
+    specimenCache.setName("specimenIds");
+    specimenCache.setMaxEntriesLocalDisk(0);
+    specimenCache.setMaxEntriesLocalHeap(10000);
+    specimenCache.persistence(new PersistenceConfiguration().strategy(Strategy.LOCALTEMPSWAP));
+    specimenCache.setEternal(true);
 
-    };
+    val sampleCache = new CacheConfiguration();
+    sampleCache.setName("sampleIds");
+    sampleCache.setMaxEntriesLocalDisk(0);
+    sampleCache.setMaxEntriesLocalHeap(10000);
+    sampleCache.persistence(new PersistenceConfiguration().strategy(Strategy.LOCALTEMPSWAP));
+    sampleCache.setEternal(true);
+
+    val mutationCache = new CacheConfiguration();
+    mutationCache.setName("mutationIds");
+    mutationCache.setMaxEntriesLocalDisk(0);
+    mutationCache.setMaxEntriesLocalHeap(10000);
+    mutationCache.persistence(new PersistenceConfiguration().strategy(Strategy.LOCALTEMPSWAP));
+    mutationCache.setEternal(true);
+
+    val config = new net.sf.ehcache.config.Configuration();
+    config.addDiskStore(new DiskStoreConfiguration().path(cacheDir));
+    config.addCache(tokenCache);
+    config.addCache(donorCache);
+    config.addCache(specimenCache);
+    config.addCache(sampleCache);
+    config.addCache(mutationCache);
+
+    return net.sf.ehcache.CacheManager.newInstance(config);
   }
 
+  @Bean
+  @Override
+  public CacheManager cacheManager() {
+    return new EhCacheCacheManager(ehCacheManager());
+  }
+
+  @Bean
   @Override
   public KeyGenerator keyGenerator() {
     return new SimpleKeyGenerator();
+  }
+
+  @Bean(initMethod = "init", destroyMethod = "dispose")
+  public ManagementService managementService() {
+    return new ManagementService(ehCacheManager(), mbeanServer(), true, true, true, true);
+  }
+
+  @Bean
+  public MBeanServer mbeanServer() {
+    val factory = new MBeanServerFactoryBean();
+    factory.setLocateExistingServerIfPossible(true);
+    factory.afterPropertiesSet();
+
+    return factory.getObject();
   }
 
 }

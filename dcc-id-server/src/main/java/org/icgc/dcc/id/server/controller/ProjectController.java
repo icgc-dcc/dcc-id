@@ -20,6 +20,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
 import org.icgc.dcc.id.server.repository.ProjectRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -35,6 +36,7 @@ public class ProjectController {
   @NonNull
   private final ProjectRepository repository;
 
+  @Cacheable("projectIds")
   @RequestMapping(value = "/id", method = GET)
   public String projectId(
       @RequestParam("submittedProjectId") String submittedProjectId,

@@ -20,6 +20,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
 import org.icgc.dcc.id.server.repository.DonorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -35,6 +36,7 @@ public class DonorController {
   @NonNull
   private final DonorRepository repository;
 
+  @Cacheable("donorIds")
   @RequestMapping(value = "/id", method = GET)
   public String donorId(
       @RequestParam("submittedDonorId") String submittedDonorId,
