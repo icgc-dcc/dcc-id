@@ -1,7 +1,7 @@
-ICGC DCC - Identifier Client
+ICGC DCC - ID Client
 ===
 
-Identifier client module which communicates with the identifier server
+ID client module which communicates with the ID server
 
 Build
 ---

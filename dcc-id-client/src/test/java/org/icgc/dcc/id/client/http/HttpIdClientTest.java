@@ -1,4 +1,4 @@
-package org.icgc.dcc.id.client.core;
+package org.icgc.dcc.id.client.http;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
@@ -8,12 +8,13 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.icgc.dcc.id.client.core.HttpIdClient.DONOR_ID_PATH;
-import static org.icgc.dcc.id.client.core.HttpIdClient.MUTATION_ID_PATH;
-import static org.icgc.dcc.id.client.core.HttpIdClient.SAMPLE_ID_PATH;
-import static org.icgc.dcc.id.client.core.HttpIdClient.SPECIMEN_ID_PATH;
+import static org.icgc.dcc.id.client.http.HttpIdClient.DONOR_ID_PATH;
+import static org.icgc.dcc.id.client.http.HttpIdClient.MUTATION_ID_PATH;
+import static org.icgc.dcc.id.client.http.HttpIdClient.SAMPLE_ID_PATH;
+import static org.icgc.dcc.id.client.http.HttpIdClient.SPECIMEN_ID_PATH;
 
-import org.icgc.dcc.id.client.core.HttpIdClient.Config;
+import org.icgc.dcc.id.client.http.HttpIdClient;
+import org.icgc.dcc.id.client.http.HttpIdClient.Config;
 import org.junit.Rule;
 import org.junit.Test;
 

@@ -18,12 +18,14 @@
 package org.icgc.dcc.id.server.config;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.icgc.dcc.metadata.core.retry.RetryPolicies.getRetryableExceptions;
+import static org.icgc.dcc.id.server.retry.RetryPolicies.getRetryableExceptions;
 import static org.springframework.retry.backoff.ExponentialBackOffPolicy.DEFAULT_MULTIPLIER;
+
+import org.icgc.dcc.id.server.retry.ClientRetryListener;
+import org.icgc.dcc.id.server.retry.DefaultRetryListener;
+
 import lombok.val;
 
-import org.icgc.dcc.metadata.core.retry.ClientRetryListener;
-import org.icgc.dcc.metadata.core.retry.DefaultRetryListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

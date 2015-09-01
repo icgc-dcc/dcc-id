@@ -16,6 +16,7 @@
  */
 package org.icgc.dcc.id.server.repository;
 
+import org.icgc.dcc.id.core.Prefixes;
 import org.skife.jdbi.v2.sqlobject.Bind;
 import org.skife.jdbi.v2.sqlobject.GetGeneratedKeys;
 import org.skife.jdbi.v2.sqlobject.SqlQuery;
@@ -53,7 +54,7 @@ public abstract class DonorRepository extends BaseRepository {
    */
   @Override
   String getPrefix() {
-    return "DO";
+    return Prefixes.DONOR_ID_PREFIX;
   }
 
   /**

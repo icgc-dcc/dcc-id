@@ -15,25 +15,34 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.metadata.core.retry;
+package org.icgc.dcc.id.client.http;
 
-import static lombok.AccessLevel.PROTECTED;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.experimental.FieldDefaults;
+import org.icgc.dcc.id.client.http.HttpIdClient;
+import org.junit.Ignore;
+import org.junit.Test;
 
-import org.springframework.retry.listener.RetryListenerSupport;
+import lombok.Cleanup;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
-/**
- * ClientRetryListener allows to inject client logic which will be executed before any statements of
- * {@link DefaultRetryListener}. If after a call to the ClientRetryListener {@code isRetry()} returns {@code FALSE} the
- * default retry logic will not be executed.
- */
-@Data
-@FieldDefaults(level = PROTECTED)
-@EqualsAndHashCode(callSuper = false)
-public class ClientRetryListener extends RetryListenerSupport {
+@Ignore
+@Slf4j
+public class HttpIdClientIntegrationTest {
 
-  boolean retry = true;
+  @Test
+  public void testClient() throws Exception {
+    @Cleanup
+    val client = new HttpIdClient(HttpIdClient.Config.builder()
+        .release("1")
+        .serviceUrl("https://localhost:8443")
+        .authToken(System.getProperty("authToken"))
+        .strictSSLCertificates(false)
+        .build());
+
+    val submittedDonorId = "1";
+    val submittedProjectId = "2";
+    val donorId = client.getDonorId(submittedDonorId, submittedProjectId);
+    log.info("donorId: {}", donorId);
+  }
 
 }

@@ -1,7 +1,7 @@
-ICGC DCC - Identifier Server
+ICGC DCC - ID Server
 ===
 
-Entry point to the identifier server.
+Entry point to the ID server.
 
 Build
 ---

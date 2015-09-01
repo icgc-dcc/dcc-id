@@ -16,6 +16,7 @@
  */
 package org.icgc.dcc.id.server.repository;
 
+import org.icgc.dcc.id.core.Prefixes;
 import org.skife.jdbi.v2.sqlobject.Bind;
 import org.skife.jdbi.v2.sqlobject.GetGeneratedKeys;
 import org.skife.jdbi.v2.sqlobject.SqlQuery;
@@ -50,7 +51,7 @@ public abstract class ProjectRepository extends BaseRepository {
    */
   @Override
   String getPrefix() {
-    return "PR";
+    return Prefixes.PROJECT_ID_PREFIX;
   }
 
   /**

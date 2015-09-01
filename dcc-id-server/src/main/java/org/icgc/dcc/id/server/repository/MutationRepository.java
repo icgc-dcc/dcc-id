@@ -16,6 +16,7 @@
  */
 package org.icgc.dcc.id.server.repository;
 
+import org.icgc.dcc.id.core.Prefixes;
 import org.skife.jdbi.v2.sqlobject.Bind;
 import org.skife.jdbi.v2.sqlobject.GetGeneratedKeys;
 import org.skife.jdbi.v2.sqlobject.SqlQuery;
@@ -65,7 +66,7 @@ public abstract class MutationRepository extends BaseRepository {
    */
   @Override
   String getPrefix() {
-    return "MU";
+    return Prefixes.MUTATION_ID_PREFIX;
   }
 
   /**

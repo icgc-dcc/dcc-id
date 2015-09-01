@@ -15,70 +15,95 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.id.client.core;
+package org.icgc.dcc.id.client.util;
 
-import java.io.IOException;
 import java.util.Optional;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import org.icgc.dcc.id.client.core.IdClient;
 
-@RequiredArgsConstructor
-public abstract class ForwardingIdClient implements IdClient {
+import com.google.common.base.Function;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+
+import lombok.NonNull;
+import lombok.SneakyThrows;
+import lombok.Value;
+
+public class CachingIdClient extends ForwardingIdClient {
 
   /**
-   * Dependencies.
+   * Caches.
    */
   @NonNull
-  protected final IdClient delegate;
+  private final LoadingCache<Key, Optional<String>> donorIdCache;
+  private final LoadingCache<Key, Optional<String>> specimenIdCache;
+  private final LoadingCache<Key, Optional<String>> sampleIdCache;
+
+  public CachingIdClient(IdClient delegate) {
+    super(delegate);
+
+    this.donorIdCache =
+        createCache(key -> key.isCreate() ? Optional
+            .of(delegate.createDonorId(key.getSubmittedId(), key.getSubmittedProjectId())) : delegate
+                .getDonorId(key.getSubmittedId(), key.getSubmittedProjectId()));
+    this.specimenIdCache =
+        createCache(key -> key.isCreate() ? Optional
+            .of(delegate.createSpecimenId(key.getSubmittedId(), key.getSubmittedProjectId())) : delegate
+                .getSpecimenId(key.getSubmittedId(), key.getSubmittedProjectId()));
+    this.sampleIdCache =
+        createCache(key -> key.isCreate() ? Optional
+            .of(delegate.createSampleId(key.getSubmittedId(), key.getSubmittedProjectId())) : delegate
+                .getSampleId(key.getSubmittedId(), key.getSubmittedProjectId()));
+  }
 
   @Override
+  @SneakyThrows
   public Optional<String> getDonorId(String submittedDonorId, String submittedProjectId) {
-    return delegate.getDonorId(submittedDonorId, submittedProjectId);
+    return donorIdCache.get(new Key(submittedDonorId, submittedProjectId, false));
   }
 
   @Override
+  @SneakyThrows
   public Optional<String> getSpecimenId(String submittedSpecimenId, String submittedProjectId) {
-    return delegate.getSpecimenId(submittedSpecimenId, submittedProjectId);
+    return specimenIdCache.get(new Key(submittedSpecimenId, submittedProjectId, false));
   }
 
   @Override
+  @SneakyThrows
   public Optional<String> getSampleId(String submittedSampleId, String submittedProjectId) {
-    return delegate.getSampleId(submittedSampleId, submittedProjectId);
+    return sampleIdCache.get(new Key(submittedSampleId, submittedProjectId, false));
   }
 
   @Override
-  public Optional<String> getMutationId(String chromosome, String chromosomeStart, String chromosomeEnd,
-      String mutation,
-      String mutationType, String assemblyVersion) {
-    return delegate.getMutationId(chromosome, chromosomeStart, chromosomeEnd, mutation, mutationType, assemblyVersion);
-  }
-
-  @Override
+  @SneakyThrows
   public String createDonorId(String submittedDonorId, String submittedProjectId) {
-    return delegate.createDonorId(submittedDonorId, submittedProjectId);
+    return donorIdCache.get(new Key(submittedDonorId, submittedProjectId, true)).get();
   }
 
   @Override
+  @SneakyThrows
   public String createSpecimenId(String submittedSpecimenId, String submittedProjectId) {
-    return delegate.createSpecimenId(submittedSpecimenId, submittedProjectId);
+    return specimenIdCache.get(new Key(submittedSpecimenId, submittedProjectId, true)).get();
   }
 
   @Override
+  @SneakyThrows
   public String createSampleId(String submittedSampleId, String submittedProjectId) {
-    return delegate.createSampleId(submittedSampleId, submittedProjectId);
+    return sampleIdCache.get(new Key(submittedSampleId, submittedProjectId, true)).get();
   }
 
-  @Override
-  public String createMutationId(String chromosome, String chromosomeStart, String chromosomeEnd, String mutation,
-      String mutationType, String assemblyVersion) {
-    return delegate.createMutationId(chromosome, chromosomeStart, chromosomeEnd, mutation, mutationType,
-        assemblyVersion);
+  private static LoadingCache<Key, Optional<String>> createCache(Function<Key, Optional<String>> loader) {
+    return CacheBuilder.newBuilder().build(CacheLoader.from(loader));
   }
 
-  @Override
-  public void close() throws IOException {
-    delegate.close();
+  @Value
+  private static class Key {
+
+    String submittedId;
+    String submittedProjectId;
+    boolean create;
+
   }
 
 }

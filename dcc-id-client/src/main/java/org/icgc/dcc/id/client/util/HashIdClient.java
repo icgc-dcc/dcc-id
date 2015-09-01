@@ -15,13 +15,16 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.id.client.core;
+package org.icgc.dcc.id.client.util;
 
 import static com.google.common.base.Joiner.on;
 import static com.google.common.hash.Hashing.md5;
 
 import java.io.IOException;
 import java.util.Optional;
+
+import org.icgc.dcc.id.client.core.IdClient;
+import org.icgc.dcc.id.core.Prefixes;
 
 import com.google.common.base.Joiner;
 import com.google.common.hash.HashFunction;
@@ -49,21 +52,21 @@ public class HashIdClient implements IdClient {
 
   @Override
   public Optional<String> getDonorId(String submittedDonorId, String submittedProjectId) {
-    return Optional.of("DO" + generateId(
+    return Optional.of(Prefixes.DONOR_ID_PREFIX + generateId(
         submittedDonorId,
         submittedProjectId));
   }
 
   @Override
   public Optional<String> getSampleId(String submittedSampleId, String submittedProjectId) {
-    return Optional.of("SA" + generateId(
+    return Optional.of(Prefixes.SAMPLE_ID_PREFIX + generateId(
         submittedSampleId,
         submittedProjectId));
   }
 
   @Override
   public Optional<String> getSpecimenId(String submittedSpecimenId, String submittedProjectId) {
-    return Optional.of("SP" + generateId(
+    return Optional.of(Prefixes.SPECIMEN_ID_PREFIX + generateId(
         submittedSpecimenId,
         submittedProjectId));
   }
@@ -71,7 +74,7 @@ public class HashIdClient implements IdClient {
   @Override
   public Optional<String> getMutationId(String chromosome, String chromosomeStart, String chromosomeEnd,
       String mutation, String mutationType, String assemblyVersion) {
-    return Optional.of("MU" + generateId(
+    return Optional.of(Prefixes.MUTATION_ID_PREFIX + generateId(
         chromosome,
         chromosomeStart,
         chromosomeEnd,
