@@ -20,6 +20,7 @@ package org.icgc.dcc.id.client.core;
 import static com.google.common.base.Joiner.on;
 import static com.google.common.hash.Hashing.md5;
 
+import java.io.IOException;
 import java.util.Optional;
 
 import com.google.common.base.Joiner;
@@ -98,6 +99,11 @@ public class HashIdClient implements IdClient {
   @Override
   public String createSpecimenId(String submittedSpecimenId, String submittedProjectId) {
     return getSpecimenId(submittedSpecimenId, submittedProjectId).get();
+  }
+
+  @Override
+  public void close() throws IOException {
+    // No-op
   }
 
   private static String generateId(String... keys) {

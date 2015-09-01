@@ -16,17 +16,15 @@
  */
 package org.icgc.dcc.id.server.repository;
 
-import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-import lombok.experimental.Accessors;
+import lombok.Value;
 
-@Data
+@Value
 @EqualsAndHashCode(callSuper = false)
-@Accessors
 public class BadRequestException extends RuntimeException {
 
   @NonNull
-  private final String message;
+  String message;
 
 }

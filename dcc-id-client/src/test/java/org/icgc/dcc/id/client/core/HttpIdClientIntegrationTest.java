@@ -15,24 +15,31 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.id.client.config;
+package org.icgc.dcc.id.client.core;
 
-import javax.annotation.PostConstruct;
+import org.junit.Test;
 
-import org.icgc.dcc.common.core.security.SSLCertificateValidation;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
+import lombok.Cleanup;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
-/**
- * Disables verification of SSL self-signed certificates.
- */
-@Profile("development")
-@Configuration
-public class SSLConfig {
+@Slf4j
+public class HttpIdClientIntegrationTest {
 
-  @PostConstruct
-  public void init() {
-    SSLCertificateValidation.disable();
+  @Test
+  public void testClient() throws Exception {
+    @Cleanup
+    val client = new HttpIdClient(HttpIdClient.Config.builder()
+        .release("1")
+        .serviceUrl("https://localhost:8443")
+        .authToken(System.getProperty("authToken"))
+        .strictSSLCertificates(false)
+        .build());
+
+    val submittedDonorId = "1";
+    val submittedProjectId = "2";
+    val donorId = client.getDonorId(submittedDonorId, submittedProjectId);
+    log.info("donorId: {}", donorId);
   }
 
 }

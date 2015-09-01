@@ -17,9 +17,10 @@
  */
 package org.icgc.dcc.id.client.core;
 
+import java.io.Closeable;
 import java.util.Optional;
 
-public interface IdClient {
+public interface IdClient extends Closeable {
 
   /**
    * Read-only

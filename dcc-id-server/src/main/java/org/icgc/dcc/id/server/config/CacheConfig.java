@@ -17,6 +17,9 @@
  */
 package org.icgc.dcc.id.server.config;
 
+import static java.util.concurrent.TimeUnit.MINUTES;
+import static net.sf.ehcache.config.PersistenceConfiguration.Strategy.LOCALTEMPSWAP;
+
 import javax.management.MBeanServer;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -34,7 +37,6 @@ import lombok.val;
 import net.sf.ehcache.config.CacheConfiguration;
 import net.sf.ehcache.config.DiskStoreConfiguration;
 import net.sf.ehcache.config.PersistenceConfiguration;
-import net.sf.ehcache.config.PersistenceConfiguration.Strategy;
 import net.sf.ehcache.management.ManagementService;
 
 /**
@@ -51,44 +53,31 @@ public class CacheConfig extends CachingConfigurerSupport {
   public net.sf.ehcache.CacheManager ehCacheManager() {
     val tokenCache = new CacheConfiguration();
     tokenCache.setName("tokens");
-    tokenCache.setTimeToLiveSeconds(3600);
-    tokenCache.setMaxEntriesLocalHeap(1000);
+    tokenCache.setTimeToLiveSeconds(MINUTES.toSeconds(30));
+    tokenCache.setMaxEntriesLocalHeap(100);
 
-    val donorCache = new CacheConfiguration();
-    donorCache.setName("donorIds");
-    donorCache.setMaxEntriesLocalDisk(0);
-    donorCache.setMaxEntriesLocalHeap(10000);
-    donorCache.persistence(new PersistenceConfiguration().strategy(Strategy.LOCALTEMPSWAP));
-    donorCache.setEternal(true);
+    // In-memory caches
+    val projectCache = createMemoryCache("projectIds");
+    val donorCache = createMemoryCache("donorIds");
+    val specimenCache = createMemoryCache("specimenIds");
+    val sampleCache = createMemoryCache("sampleIds");
 
-    val specimenCache = new CacheConfiguration();
-    specimenCache.setName("specimenIds");
-    specimenCache.setMaxEntriesLocalDisk(0);
-    specimenCache.setMaxEntriesLocalHeap(10000);
-    specimenCache.persistence(new PersistenceConfiguration().strategy(Strategy.LOCALTEMPSWAP));
-    specimenCache.setEternal(true);
-
-    val sampleCache = new CacheConfiguration();
-    sampleCache.setName("sampleIds");
-    sampleCache.setMaxEntriesLocalDisk(0);
-    sampleCache.setMaxEntriesLocalHeap(10000);
-    sampleCache.persistence(new PersistenceConfiguration().strategy(Strategy.LOCALTEMPSWAP));
-    sampleCache.setEternal(true);
-
+    // Overflow to disk
     val mutationCache = new CacheConfiguration();
     mutationCache.setName("mutationIds");
     mutationCache.setMaxEntriesLocalDisk(0);
-    mutationCache.setMaxEntriesLocalHeap(10000);
-    mutationCache.persistence(new PersistenceConfiguration().strategy(Strategy.LOCALTEMPSWAP));
+    mutationCache.setMaxEntriesLocalHeap(100_000);
     mutationCache.setEternal(true);
+    mutationCache.persistence(createPersistenceConfig());
 
     val config = new net.sf.ehcache.config.Configuration();
-    config.addDiskStore(new DiskStoreConfiguration().path(cacheDir));
     config.addCache(tokenCache);
+    config.addCache(projectCache);
     config.addCache(donorCache);
     config.addCache(specimenCache);
     config.addCache(sampleCache);
     config.addCache(mutationCache);
+    config.addDiskStore(new DiskStoreConfiguration().path(cacheDir));
 
     return net.sf.ehcache.CacheManager.newInstance(config);
   }
@@ -107,6 +96,7 @@ public class CacheConfig extends CachingConfigurerSupport {
 
   @Bean(initMethod = "init", destroyMethod = "dispose")
   public ManagementService managementService() {
+    // Expose the cache manager to JMX
     return new ManagementService(ehCacheManager(), mbeanServer(), true, true, true, true);
   }
 
@@ -117,6 +107,21 @@ public class CacheConfig extends CachingConfigurerSupport {
     factory.afterPropertiesSet();
 
     return factory.getObject();
+  }
+
+  private static CacheConfiguration createMemoryCache(String name) {
+    val cache = new CacheConfiguration();
+    cache.setName(name);
+    cache.setMaxEntriesLocalDisk(0);
+    cache.setMaxEntriesLocalHeap(1);
+    cache.setEternal(true); // Never expire
+    cache.persistence(createPersistenceConfig());
+
+    return cache;
+  }
+
+  private static PersistenceConfiguration createPersistenceConfig() {
+    return new PersistenceConfiguration().strategy(LOCALTEMPSWAP);
   }
 
 }

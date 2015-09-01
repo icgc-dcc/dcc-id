@@ -42,9 +42,9 @@ spring:
   
 # JDBC
 spring.datasource:
-  url: jdbc:postgresql://hmongodb-dev.res.oicr.on.ca:5432/dcc_identifier
-  username: dcc
-  password: dcc
+  url: jdbc:postgresql://***REMOVED***/dcc_identifier
+  username: <username>
+  password: <password>
   driverClassName: org.postgresql.Driver
 
 ---
@@ -92,7 +92,7 @@ auth:
   server:
     url: https://***REMOVED***/oauth/check_token
     clientId: <id>
-    clientsecret: <pass>
+    clientsecret: <password>
     
   # Connection retries in case of connection failure 
   connection:

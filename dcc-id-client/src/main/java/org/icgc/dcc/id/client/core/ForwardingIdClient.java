@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.id.client.core;
 
+import java.io.IOException;
 import java.util.Optional;
 
 import lombok.NonNull;
@@ -73,6 +74,11 @@ public abstract class ForwardingIdClient implements IdClient {
       String mutationType, String assemblyVersion) {
     return delegate.createMutationId(chromosome, chromosomeStart, chromosomeEnd, mutation, mutationType,
         assemblyVersion);
+  }
+
+  @Override
+  public void close() throws IOException {
+    delegate.close();
   }
 
 }
