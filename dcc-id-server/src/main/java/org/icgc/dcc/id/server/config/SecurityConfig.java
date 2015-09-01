@@ -17,75 +17,49 @@
  */
 package org.icgc.dcc.id.server.config;
 
-import static org.springframework.http.HttpMethod.GET;
-
-import java.io.IOException;
-
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.method.configuration.GlobalMethodSecurityConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
-import org.springframework.security.oauth2.provider.authentication.BearerTokenExtractor;
-import org.springframework.security.oauth2.provider.authentication.TokenExtractor;
-import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
-import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.security.oauth2.provider.expression.OAuth2MethodSecurityExpressionHandler;
 
 /**
  * Resource service configuration file.<br>
  * Protects resources with access token obtained at the authorization server.
  */
-
 @Configuration
 @Profile("secure")
 @EnableWebSecurity
 @EnableResourceServer
 public class SecurityConfig extends ResourceServerConfigurerAdapter {
 
-  private static final String ACCESS_CONFIG = "#oauth2.hasScope('os.upload') or #oauth2.hasScope('s3.upload')";
-  private TokenExtractor tokenExtractor = new BearerTokenExtractor();
+  public static final String AUTHORIZATION_SCOPE = "os.upload";
+  public static final String AUTHORIZATION_EXPRESSION =
+      "#oauth2.hasScope('" + AUTHORIZATION_SCOPE + "') or #create == false";
 
   @Override
   public void configure(HttpSecurity http) throws Exception {
-    http.addFilterAfter(new OncePerRequestFilter() {
-
-      @Override
-      protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
-          FilterChain filterChain)
-              throws ServletException, IOException {
-        // We don't want to allow access to a controller with no token so clear
-        // the security context in case it is actually an OAuth2Authentication
-        if (tokenExtractor.extract(request) == null) {
-          SecurityContextHolder.clearContext();
-        }
-        filterChain.doFilter(request, response);
-      }
-
-    }, AbstractPreAuthenticatedProcessingFilter.class);
-
-    http.csrf().disable();
-    configureAuthorization(http);
-  }
-
-  private static void configureAuthorization(HttpSecurity http) throws Exception {
-    // @formatter:off
-      http
-        .authorizeRequests()
-        .antMatchers(GET,"/**/id")
-        .access(ACCESS_CONFIG)
-        .and()
-        
+    http
+        .csrf().disable()
         .authorizeRequests()
         .anyRequest()
         .permitAll();
-      // @formatter:on
+  }
+
+  @Configuration
+  @EnableGlobalMethodSecurity(prePostEnabled = true, proxyTargetClass = true)
+  protected static class MethodSecurityConfig extends GlobalMethodSecurityConfiguration {
+
+    @Override
+    protected MethodSecurityExpressionHandler createExpressionHandler() {
+      return new OAuth2MethodSecurityExpressionHandler();
+    }
+
   }
 
 }

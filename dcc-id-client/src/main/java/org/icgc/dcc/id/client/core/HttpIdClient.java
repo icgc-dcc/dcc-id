@@ -186,6 +186,10 @@ public class HttpIdClient implements IdClient {
   private Optional<String> getResponse(WebResource request, RetryContext retryContext) {
     try {
       val response = request.get(ClientResponse.class);
+      if (response.getStatus() == 401 || response.getStatus() == 403) {
+        throw new RuntimeException(response.getEntity(String.class));
+      }
+
       if (response.getStatus() == 404) {
         return Optional.empty();
       }

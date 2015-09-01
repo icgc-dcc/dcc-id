@@ -32,7 +32,7 @@ public class HttpIdClientIntegrationTest {
     val client = new HttpIdClient(HttpIdClient.Config.builder()
         .release("1")
         .serviceUrl("https://localhost:8443")
-        .authToken(System.getProperty("authToken"))
+        // .authToken(System.getProperty("authToken") + "")
         .strictSSLCertificates(false)
         .build());
 

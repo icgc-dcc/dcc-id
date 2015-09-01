@@ -16,11 +16,13 @@
  */
 package org.icgc.dcc.id.server.controller;
 
+import static org.icgc.dcc.id.server.config.SecurityConfig.AUTHORIZATION_EXPRESSION;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
 import org.icgc.dcc.id.server.repository.DonorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -38,6 +40,7 @@ public class DonorController {
 
   @Cacheable("donorIds")
   @RequestMapping(value = "/id", method = GET)
+  @PreAuthorize(AUTHORIZATION_EXPRESSION)
   public String donorId(
       @RequestParam("submittedDonorId") String submittedDonorId,
       @RequestParam("submittedProjectId") String submittedProjectId,
