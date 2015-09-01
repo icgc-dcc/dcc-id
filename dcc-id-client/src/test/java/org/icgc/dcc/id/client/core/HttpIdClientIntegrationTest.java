@@ -17,12 +17,14 @@
  */
 package org.icgc.dcc.id.client.core;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import lombok.Cleanup;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+@Ignore
 @Slf4j
 public class HttpIdClientIntegrationTest {
 
@@ -32,7 +34,7 @@ public class HttpIdClientIntegrationTest {
     val client = new HttpIdClient(HttpIdClient.Config.builder()
         .release("1")
         .serviceUrl("https://localhost:8443")
-        // .authToken(System.getProperty("authToken") + "")
+        .authToken(System.getProperty("authToken"))
         .strictSSLCertificates(false)
         .build());
 

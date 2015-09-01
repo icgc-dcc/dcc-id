@@ -235,7 +235,10 @@ public class HttpIdClient implements IdClient {
     val client = Client.create(clientConfig);
     client.setConnectTimeout(5000);
     client.setReadTimeout(5000);
-    client.addFilter(oauth2Filter(config));
+
+    if (config.getAuthToken() != null) {
+      client.addFilter(oauth2Filter(config));
+    }
 
     if (config.isRequestLoggingEnabled()) {
       client.addFilter(new LoggingFilter());
