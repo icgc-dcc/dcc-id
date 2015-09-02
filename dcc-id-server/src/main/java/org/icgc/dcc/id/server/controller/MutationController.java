@@ -41,17 +41,19 @@ public class MutationController {
   @NonNull
   private final MutationRepository repository;
 
-  @Cacheable("mutationIds")
-  @RequestMapping(value = "/id", method = GET)
   @PreAuthorize(AUTHORIZATION_EXPRESSION)
+  @Cacheable(value = "mutationIds", key = "{ #chromosome, #chromosomeStart, #chromosomeEnd, #mutation, #mutationType, #assemblyVersion }")
+  @RequestMapping(value = "/id", method = GET)
   public String mutationId(
+      // Required
       @RequestParam("chromosome") String chromosome,
       @RequestParam("chromosomeStart") String chromosomeStart,
       @RequestParam("chromosomeEnd") String chromosomeEnd,
       @RequestParam("mutation") String mutation,
       @RequestParam("mutationType") String mutationType,
       @RequestParam("assemblyVersion") String assemblyVersion,
-      @RequestParam("release") String release,
+      // Optional
+      @RequestParam(value = "release", defaultValue = "unknown") String release,
       @RequestParam(value = "create", defaultValue = "false") boolean create) {
     return repository.findId(create, chromosome, chromosomeStart, chromosomeEnd, mutationType, mutation,
         assemblyVersion, release);

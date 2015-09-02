@@ -23,9 +23,6 @@ import static org.springframework.retry.backoff.ExponentialBackOffPolicy.DEFAULT
 
 import org.icgc.dcc.id.server.retry.ClientRetryListener;
 import org.icgc.dcc.id.server.retry.DefaultRetryListener;
-
-import lombok.val;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -39,13 +36,21 @@ import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.security.oauth2.common.exceptions.InvalidTokenException;
 
+import lombok.val;
+
 @Configuration
 @Profile("secure")
 public class RetryConfig {
 
+  /**
+   * Constants.
+   */
   private static final int DEFAULT_MAX_RETRIES = 5;
   private static final long DEFAULT_INITIAL_BACKOFF_INTERVAL = SECONDS.toMillis(15L);
 
+  /**
+   * Configuration.
+   */
   @Value("${auth.connection.maxRetries}")
   private int maxRetries = DEFAULT_MAX_RETRIES;
   @Value("${auth.connection.initialBackoff}")
@@ -53,14 +58,16 @@ public class RetryConfig {
   @Value("${auth.connection.multiplier}")
   private double multiplier = DEFAULT_MULTIPLIER;
 
+  /**
+   * Dependencies.
+   */
   @Autowired
   private ClientRetryListener clientRetryListener;
 
   @Bean
   public RetryTemplate retryTemplate() {
     val result = new RetryTemplate();
-    result.setBackOffPolicy(defineBackOffPolicy());
-
+    result.setBackOffPolicy(createBackOffPolicy());
     result.setRetryPolicy(new SimpleRetryPolicy(maxRetries, getRetryableExceptions(), true));
     result.registerListener(new DefaultRetryListener(clientRetryListener));
 
@@ -75,6 +82,7 @@ public class RetryConfig {
       public <T, E extends Throwable> void onError(RetryContext context, RetryCallback<T, E> callback,
           Throwable throwable) {
         if (throwable instanceof InvalidTokenException) {
+          // TODO: Verify if this cancells all future retries
           this.retry = false;
         }
       }
@@ -82,7 +90,7 @@ public class RetryConfig {
 
   }
 
-  private BackOffPolicy defineBackOffPolicy() {
+  private BackOffPolicy createBackOffPolicy() {
     val backOffPolicy = new ExponentialBackOffPolicy();
     backOffPolicy.setInitialInterval(initialBackoff);
     backOffPolicy.setMultiplier(multiplier);

@@ -51,32 +51,32 @@ public class CacheConfig extends CachingConfigurerSupport {
 
   @Bean(destroyMethod = "shutdown")
   public net.sf.ehcache.CacheManager ehCacheManager() {
-    val tokenCache = new CacheConfiguration();
-    tokenCache.setName("tokens");
-    tokenCache.setTimeToLiveSeconds(MINUTES.toSeconds(30));
-    tokenCache.setMaxEntriesLocalHeap(100);
+    val tokens = new CacheConfiguration();
+    tokens.setName("tokens");
+    tokens.setTimeToLiveSeconds(MINUTES.toSeconds(30));
+    tokens.setMaxEntriesLocalHeap(100);
 
     // In-memory caches
-    val projectCache = createMemoryCache("projectIds");
-    val donorCache = createMemoryCache("donorIds");
-    val specimenCache = createMemoryCache("specimenIds");
-    val sampleCache = createMemoryCache("sampleIds");
+    val projectIds = createMemoryCache("projectIds");
+    val donorIds = createMemoryCache("donorIds");
+    val specimenIds = createMemoryCache("specimenIds");
+    val sampleIds = createMemoryCache("sampleIds");
 
     // Overflow to disk
-    val mutationCache = new CacheConfiguration();
-    mutationCache.setName("mutationIds");
-    mutationCache.setMaxEntriesLocalDisk(0);
-    mutationCache.setMaxEntriesLocalHeap(100_000);
-    mutationCache.setEternal(true);
-    mutationCache.persistence(createPersistenceConfig());
+    val mutationIds = new CacheConfiguration();
+    mutationIds.setName("mutationIds");
+    mutationIds.setMaxEntriesLocalDisk(0);
+    mutationIds.setMaxEntriesLocalHeap(100_000);
+    mutationIds.setEternal(true);
+    mutationIds.persistence(createPersistenceConfig());
 
     val config = new net.sf.ehcache.config.Configuration();
-    config.addCache(tokenCache);
-    config.addCache(projectCache);
-    config.addCache(donorCache);
-    config.addCache(specimenCache);
-    config.addCache(sampleCache);
-    config.addCache(mutationCache);
+    config.addCache(tokens);
+    config.addCache(projectIds);
+    config.addCache(donorIds);
+    config.addCache(specimenIds);
+    config.addCache(sampleIds);
+    config.addCache(mutationIds);
     config.addDiskStore(new DiskStoreConfiguration().path(cacheDir));
 
     return net.sf.ehcache.CacheManager.newInstance(config);

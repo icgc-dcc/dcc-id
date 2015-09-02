@@ -35,16 +35,21 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired) )
 public class SpecimenController {
 
+  /**
+   * Dependencies
+   */
   @NonNull
   private final SpecimenRepository repository;
 
-  @Cacheable("specimenIds")
-  @RequestMapping(value = "/id", method = GET)
   @PreAuthorize(AUTHORIZATION_EXPRESSION)
+  @Cacheable(value = "specimenIds", key = "{ #submittedSpecimenId, #submittedProjectId }")
+  @RequestMapping(value = "/id", method = GET)
   public String specimenId(
+      // Required
       @RequestParam("submittedSpecimenId") String submittedSpecimenId,
       @RequestParam("submittedProjectId") String submittedProjectId,
-      @RequestParam("release") String release,
+      // Optional
+      @RequestParam(value = "release", defaultValue = "unknown") String release,
       @RequestParam(value = "create", defaultValue = "false") boolean create) {
     return repository.findId(create, submittedSpecimenId, submittedProjectId, release);
   }

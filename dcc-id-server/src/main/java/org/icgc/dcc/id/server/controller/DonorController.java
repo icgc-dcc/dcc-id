@@ -35,16 +35,21 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired) )
 public class DonorController {
 
+  /**
+   * Dependencies
+   */
   @NonNull
   private final DonorRepository repository;
 
-  @Cacheable("donorIds")
-  @RequestMapping(value = "/id", method = GET)
   @PreAuthorize(AUTHORIZATION_EXPRESSION)
+  @Cacheable(value = "donorIds", key = "{ #submittedDonorId, #submittedProjectId }")
+  @RequestMapping(value = "/id", method = GET)
   public String donorId(
+      // Required
       @RequestParam("submittedDonorId") String submittedDonorId,
       @RequestParam("submittedProjectId") String submittedProjectId,
-      @RequestParam("release") String release,
+      // Optional
+      @RequestParam(value = "release", defaultValue = "unknown") String release,
       @RequestParam(value = "create", defaultValue = "false") boolean create) {
     return repository.findId(create, submittedDonorId, submittedProjectId, release);
   }

@@ -38,9 +38,19 @@ import org.springframework.security.oauth2.provider.expression.OAuth2MethodSecur
 @EnableResourceServer
 public class SecurityConfig extends ResourceServerConfigurerAdapter {
 
-  public static final String AUTHORIZATION_SCOPE = "os.upload";
+  /**
+   * Scope required for ID creation.
+   */
+  // TODO: Change to "id.create"
+  public static final String AUTHORIZATION_SCOPE = "s3.upload";
+
+  /**
+   * Expression for ID access.
+   * <p>
+   * Read-only access is always allowed. Creation requires pre-configured scope.
+   */
   public static final String AUTHORIZATION_EXPRESSION =
-      "#oauth2.hasScope('" + AUTHORIZATION_SCOPE + "') or #create == false";
+      "#create == false or #oauth2.hasScope('" + AUTHORIZATION_SCOPE + "')";
 
   @Override
   public void configure(HttpSecurity http) throws Exception {
@@ -51,12 +61,16 @@ public class SecurityConfig extends ResourceServerConfigurerAdapter {
         .permitAll();
   }
 
+  /**
+   * Enables {@code @PreAuthorize} methods.
+   */
   @Configuration
   @EnableGlobalMethodSecurity(prePostEnabled = true, proxyTargetClass = true)
   protected static class MethodSecurityConfig extends GlobalMethodSecurityConfiguration {
 
     @Override
     protected MethodSecurityExpressionHandler createExpressionHandler() {
+      // Enable #oauth expressions
       return new OAuth2MethodSecurityExpressionHandler();
     }
 
