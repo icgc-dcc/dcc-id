@@ -1,4 +1,4 @@
-ICGC DCC - Identifier Core
+ICGC DCC - ID Core
 ===
 
 Core module
