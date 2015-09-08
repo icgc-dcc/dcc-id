@@ -84,6 +84,11 @@ public class HashIdClient implements IdClient {
   }
 
   @Override
+  public Optional<String> getFileId(String submittedFileId) {
+    return Optional.of(Prefixes.FILE_ID_PREFIX + generateId(submittedFileId));
+  }
+
+  @Override
   public String createDonorId(String submittedDonorId, String submittedProjectId) {
     return getDonorId(submittedDonorId, submittedProjectId).get();
   }
@@ -102,6 +107,11 @@ public class HashIdClient implements IdClient {
   @Override
   public String createSpecimenId(String submittedSpecimenId, String submittedProjectId) {
     return getSpecimenId(submittedSpecimenId, submittedProjectId).get();
+  }
+
+  @Override
+  public String createFileId(String submittedFileId) {
+    return getFileId(submittedFileId).get();
   }
 
   @Override

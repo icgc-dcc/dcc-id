@@ -29,5 +29,6 @@ public final class Prefixes {
   public static final String SPECIMEN_ID_PREFIX = "SP";
   public static final String SAMPLE_ID_PREFIX = "SA";
   public static final String MUTATION_ID_PREFIX = "MU";
+  public static final String FILE_ID_PREFIX = "FI";
 
 }

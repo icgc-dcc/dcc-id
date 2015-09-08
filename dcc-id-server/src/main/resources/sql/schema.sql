@@ -18,6 +18,8 @@
 -- GRANT USAGE, SELECT ON SEQUENCE specimen_ids_id_seq TO dcc;
 -- GRANT SELECT, INSERT ON mutation_ids TO dcc;
 -- GRANT USAGE, SELECT ON SEQUENCE mutation_ids_id_seq TO dcc;
+-- GRANT SELECT, INSERT ON file_ids TO dcc;
+-- GRANT USAGE, SELECT ON SEQUENCE file_ids_seq TO dcc;
 
 /* Initialize */
 
@@ -26,6 +28,7 @@ DROP TABLE IF EXISTS donor_ids;
 DROP TABLE IF EXISTS specimen_ids;
 DROP TABLE IF EXISTS sample_ids;
 DROP TABLE IF EXISTS mutation_ids;
+DROP TABLE IF EXISTS file_ids;
 
 /* Create tables */
 CREATE TABLE project_ids 
@@ -85,4 +88,12 @@ CREATE TABLE mutation_ids
   creation_release VARCHAR(512) NOT NULL, 
  
   PRIMARY KEY(chromosome, chromosome_start, chromosome_end, mutation_type, mutation, assembly_version) 
+);
+CREATE TABLE file_ids 
+( 
+  id         BIGSERIAL NOT NULL, 
+  
+  file_id    VARCHAR(512) NOT NULL, 
+
+  PRIMARY KEY(file_id)
 );

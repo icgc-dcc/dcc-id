@@ -61,6 +61,7 @@ public class CacheConfig extends CachingConfigurerSupport {
     val donorIds = createMemoryCache("donorIds");
     val specimenIds = createMemoryCache("specimenIds");
     val sampleIds = createMemoryCache("sampleIds");
+    val fileIds = createMemoryCache("fileIds");
 
     // Overflow to disk
     val mutationIds = new CacheConfiguration();
@@ -76,6 +77,7 @@ public class CacheConfig extends CachingConfigurerSupport {
     config.addCache(donorIds);
     config.addCache(specimenIds);
     config.addCache(sampleIds);
+    config.addCache(fileIds);
     config.addCache(mutationIds);
     config.addDiskStore(new DiskStoreConfiguration().path(cacheDir));
 

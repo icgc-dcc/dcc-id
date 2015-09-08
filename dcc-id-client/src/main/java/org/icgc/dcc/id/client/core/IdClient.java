@@ -35,6 +35,8 @@ public interface IdClient extends Closeable {
   Optional<String> getMutationId(String chromosome, String chromosomeStart, String chromosomeEnd,
       String mutation, String mutationType, String assemblyVersion);
 
+  Optional<String> getFileId(String submittedFileId);
+
   /**
    * Create if it doesn't exist
    */
@@ -47,5 +49,7 @@ public interface IdClient extends Closeable {
 
   String createMutationId(String chromosome, String chromosomeStart, String chromosomeEnd,
       String mutation, String mutationType, String assemblyVersion);
+
+  String createFileId(String submittedFileId);
 
 }

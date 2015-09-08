@@ -61,6 +61,7 @@ public class HttpIdClient implements IdClient {
   public final static String SPECIMEN_ID_PATH = "/api/specimen/id";
   public final static String SAMPLE_ID_PATH = "/api/sample/id";
   public final static String MUTATION_ID_PATH = "/api/mutation/id";
+  public final static String FILE_ID_PATH = "/api/file/id";
 
   /**
    * State.
@@ -108,7 +109,7 @@ public class HttpIdClient implements IdClient {
         .queryParam("release", release)
         .queryParam("create", String.valueOf(create));
 
-    return getResponse(request, RetryContext.create(clientConfig));
+    return getResponse(request);
   }
 
   @Override
@@ -129,7 +130,7 @@ public class HttpIdClient implements IdClient {
         .queryParam("release", release)
         .queryParam("create", String.valueOf(create));
 
-    return getResponse(request, RetryContext.create(clientConfig));
+    return getResponse(request);
   }
 
   @Override
@@ -150,7 +151,7 @@ public class HttpIdClient implements IdClient {
         .queryParam("release", release)
         .queryParam("create", String.valueOf(create));
 
-    return getResponse(request, RetryContext.create(clientConfig));
+    return getResponse(request);
   }
 
   @Override
@@ -181,6 +182,33 @@ public class HttpIdClient implements IdClient {
         .queryParam("release", release)
         .queryParam("create", String.valueOf(create));
 
+    return getResponse(request);
+  }
+
+  @Override
+  public Optional<String> getFileId(@NonNull String submittedFileId) {
+    return getFileId(submittedFileId, false);
+  }
+
+  @Override
+  public String createFileId(@NonNull String submittedFileId) {
+    return getFileId(submittedFileId, true).get();
+  }
+
+  private Optional<String> getFileId(String submittedFileId, boolean create) {
+    val request = resource
+        .path(FILE_ID_PATH)
+        .queryParam("submittedFileId", submittedFileId)
+        .queryParam("create", String.valueOf(create));
+
+    return getResponse(request);
+  }
+
+  /*
+   * Helpers
+   */
+
+  private Optional<String> getResponse(WebResource request) {
     return getResponse(request, RetryContext.create(clientConfig));
   }
 

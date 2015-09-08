@@ -57,6 +57,11 @@ public abstract class ForwardingIdClient implements IdClient {
   }
 
   @Override
+  public Optional<String> getFileId(String submittedFileId) {
+    return delegate.getFileId(submittedFileId);
+  }
+
+  @Override
   public String createDonorId(String submittedDonorId, String submittedProjectId) {
     return delegate.createDonorId(submittedDonorId, submittedProjectId);
   }
@@ -76,6 +81,11 @@ public abstract class ForwardingIdClient implements IdClient {
       String mutationType, String assemblyVersion) {
     return delegate.createMutationId(chromosome, chromosomeStart, chromosomeEnd, mutation, mutationType,
         assemblyVersion);
+  }
+
+  @Override
+  public String createFileId(String submittedFileId) {
+    return delegate.createFileId(submittedFileId);
   }
 
   @Override
