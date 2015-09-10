@@ -19,7 +19,7 @@
 -- GRANT SELECT, INSERT ON mutation_ids TO dcc;
 -- GRANT USAGE, SELECT ON SEQUENCE mutation_ids_id_seq TO dcc;
 -- GRANT SELECT, INSERT ON file_ids TO dcc;
--- GRANT USAGE, SELECT ON SEQUENCE file_ids_seq TO dcc;
+-- GRANT USAGE, SELECT ON SEQUENCE file_ids_id_seq TO dcc;
 
 /* Initialize */
 

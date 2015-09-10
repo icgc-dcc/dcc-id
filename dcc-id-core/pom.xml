@@ -23,4 +23,13 @@
     </dependency>
   </dependencies>
 
+  <build>
+    <plugins>
+      <!-- Include source -->
+      <plugin>
+        <artifactId>maven-source-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
+
 </project>

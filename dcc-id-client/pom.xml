@@ -15,8 +15,8 @@
   <description>${project.name}</description>
 
   <dependencies>
-  
-      <!-- DCC - ID -->
+
+    <!-- DCC - ID -->
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>dcc-id-core</artifactId>
@@ -29,12 +29,12 @@
       <artifactId>jersey-client</artifactId>
       <version>${jersey.version}</version>
     </dependency>
-		<dependency>
-			<groupId>com.sun.jersey</groupId>
-			<artifactId>jersey-json</artifactId>
-			<version>${jersey.version}</version>
-		</dependency>
-    
+    <dependency>
+      <groupId>com.sun.jersey</groupId>
+      <artifactId>jersey-json</artifactId>
+      <version>${jersey.version}</version>
+    </dependency>
+
     <!-- Test - HTTP -->
     <dependency>
       <groupId>com.github.tomakehurst</groupId>
@@ -86,6 +86,15 @@
       </exclusions>
     </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <!-- Include source -->
+      <plugin>
+        <artifactId>maven-source-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
 
   <properties>
     <jersey.version>1.17.1</jersey.version>
