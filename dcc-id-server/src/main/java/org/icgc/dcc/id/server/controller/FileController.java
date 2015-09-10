@@ -44,7 +44,7 @@ public class FileController {
   @PreAuthorize(AUTHORIZATION_EXPRESSION)
   @Cacheable(value = "fileIds", key = "{ #submittedFileId }")
   @RequestMapping(value = "/id", method = GET)
-  public String sampleId(
+  public String fileId(
       // Required
       @RequestParam("submittedFileId") String submittedFileId,
       // Optional

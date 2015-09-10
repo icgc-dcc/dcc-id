@@ -57,11 +57,11 @@ public class HttpIdClient implements IdClient {
   /**
    * Constants.
    */
-  public final static String DONOR_ID_PATH = "/api/donor/id";
-  public final static String SPECIMEN_ID_PATH = "/api/specimen/id";
-  public final static String SAMPLE_ID_PATH = "/api/sample/id";
-  public final static String MUTATION_ID_PATH = "/api/mutation/id";
-  public final static String FILE_ID_PATH = "/api/file/id";
+  public final static String DONOR_ID_PATH = "/donor/id";
+  public final static String SPECIMEN_ID_PATH = "/specimen/id";
+  public final static String SAMPLE_ID_PATH = "/sample/id";
+  public final static String MUTATION_ID_PATH = "/mutation/id";
+  public final static String FILE_ID_PATH = "/file/id";
 
   /**
    * State.

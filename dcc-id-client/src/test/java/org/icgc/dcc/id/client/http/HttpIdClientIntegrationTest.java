@@ -17,7 +17,6 @@
  */
 package org.icgc.dcc.id.client.http;
 
-import org.icgc.dcc.id.client.http.HttpIdClient;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -39,10 +38,9 @@ public class HttpIdClientIntegrationTest {
         .strictSSLCertificates(false)
         .build());
 
-    val submittedDonorId = "1";
-    val submittedProjectId = "2";
-    val donorId = client.getDonorId(submittedDonorId, submittedProjectId);
-    log.info("donorId: {}", donorId);
+    val submittedFileId = "1";
+    val fileId = client.createFileId(submittedFileId);
+    log.info("fileId: {}", fileId);
   }
 
 }

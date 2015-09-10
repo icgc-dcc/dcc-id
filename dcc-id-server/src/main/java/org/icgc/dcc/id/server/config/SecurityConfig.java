@@ -65,6 +65,7 @@ public class SecurityConfig extends ResourceServerConfigurerAdapter {
    * Enables {@code @PreAuthorize} methods.
    */
   @Configuration
+  @Profile("secure")
   @EnableGlobalMethodSecurity(prePostEnabled = true, proxyTargetClass = true)
   protected static class MethodSecurityConfig extends GlobalMethodSecurityConfiguration {
 

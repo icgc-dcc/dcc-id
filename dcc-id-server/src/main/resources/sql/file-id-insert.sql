@@ -1,5 +1,5 @@
 /* Insert file id */
 INSERT INTO file_ids 
-	(fileId, id) 
+	(file_id) 
 VALUES 
-	(:fileId, :id)
+	(:fileId)
