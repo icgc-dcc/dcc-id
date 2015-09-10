@@ -20,6 +20,7 @@ package org.icgc.dcc.id.server.config;
 import javax.sql.DataSource;
 
 import org.icgc.dcc.id.server.repository.DonorRepository;
+import org.icgc.dcc.id.server.repository.FileRepository;
 import org.icgc.dcc.id.server.repository.MutationRepository;
 import org.icgc.dcc.id.server.repository.ProjectRepository;
 import org.icgc.dcc.id.server.repository.SampleRepository;
@@ -66,6 +67,11 @@ public class RepositoryConfig {
   @Bean
   public MutationRepository mutationRepository() {
     return dbi().open(MutationRepository.class);
+  }
+
+  @Bean
+  public FileRepository fileRepository() {
+    return dbi().open(FileRepository.class);
   }
 
 }
