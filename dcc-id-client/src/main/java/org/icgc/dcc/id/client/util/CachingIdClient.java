@@ -39,6 +39,7 @@ public class CachingIdClient extends ForwardingIdClient {
   private final LoadingCache<Key, Optional<String>> donorIdCache;
   private final LoadingCache<Key, Optional<String>> specimenIdCache;
   private final LoadingCache<Key, Optional<String>> sampleIdCache;
+  private final LoadingCache<Key, Optional<String>> fileIdCache;
 
   public CachingIdClient(IdClient delegate) {
     super(delegate);
@@ -55,7 +56,15 @@ public class CachingIdClient extends ForwardingIdClient {
         createCache(key -> key.isCreate() ? Optional
             .of(delegate.createSampleId(key.getSubmittedId(), key.getSubmittedProjectId())) : delegate
                 .getSampleId(key.getSubmittedId(), key.getSubmittedProjectId()));
+    this.fileIdCache =
+        createCache(key -> key.isCreate() ? Optional
+            .of(delegate.createFileId(key.getSubmittedId())) : delegate
+                .getFileId(key.getSubmittedId()));
   }
+
+  //
+  // Read-only
+  //
 
   @Override
   @SneakyThrows
@@ -77,6 +86,16 @@ public class CachingIdClient extends ForwardingIdClient {
 
   @Override
   @SneakyThrows
+  public Optional<String> getFileId(String submittedFileId) {
+    return fileIdCache.get(new Key(submittedFileId, null, false));
+  }
+
+  //
+  // Read-write
+  //
+
+  @Override
+  @SneakyThrows
   public String createDonorId(String submittedDonorId, String submittedProjectId) {
     return donorIdCache.get(new Key(submittedDonorId, submittedProjectId, true)).get();
   }
@@ -93,10 +112,23 @@ public class CachingIdClient extends ForwardingIdClient {
     return sampleIdCache.get(new Key(submittedSampleId, submittedProjectId, true)).get();
   }
 
+  @Override
+  @SneakyThrows
+  public String createFileId(String submittedFileId) {
+    return fileIdCache.get(new Key(submittedFileId, null, true)).get();
+  }
+
+  //
+  // Helpers
+  //
+
   private static LoadingCache<Key, Optional<String>> createCache(Function<Key, Optional<String>> loader) {
     return CacheBuilder.newBuilder().build(CacheLoader.from(loader));
   }
 
+  /**
+   * Cache key
+   */
   @Value
   private static class Key {
 

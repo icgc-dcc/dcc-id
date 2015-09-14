@@ -62,14 +62,7 @@ public class CacheConfig extends CachingConfigurerSupport {
     val specimenIds = createMemoryCache("specimenIds");
     val sampleIds = createMemoryCache("sampleIds");
     val fileIds = createMemoryCache("fileIds");
-
-    // Overflow to disk
-    val mutationIds = new CacheConfiguration();
-    mutationIds.setName("mutationIds");
-    mutationIds.setMaxEntriesLocalDisk(0);
-    mutationIds.setMaxEntriesLocalHeap(100_000);
-    mutationIds.setEternal(true);
-    mutationIds.persistence(createPersistenceConfig());
+    val mutationIds = createMemoryCache("mutationIds");
 
     val config = new net.sf.ehcache.config.Configuration();
     config.addCache(tokens);
@@ -114,8 +107,8 @@ public class CacheConfig extends CachingConfigurerSupport {
   private static CacheConfiguration createMemoryCache(String name) {
     val cache = new CacheConfiguration();
     cache.setName(name);
-    cache.setMaxEntriesLocalDisk(0);
-    cache.setMaxEntriesLocalHeap(1);
+    cache.setMaxEntriesLocalDisk(0); // Unlimited
+    cache.setMaxEntriesLocalHeap(0); // Unlimited
     cache.setEternal(true); // Never expire
     cache.persistence(createPersistenceConfig());
 
