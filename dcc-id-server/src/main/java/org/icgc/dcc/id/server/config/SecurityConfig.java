@@ -41,8 +41,7 @@ public class SecurityConfig extends ResourceServerConfigurerAdapter {
   /**
    * Scope required for ID creation.
    */
-  // TODO: Change to "id.create"
-  public static final String AUTHORIZATION_SCOPE = "s3.upload";
+  public static final String AUTHORIZATION_SCOPE = "id.create";
 
   /**
    * Expression for ID access.
