@@ -17,7 +17,11 @@
  */
 package org.icgc.dcc.id.client.core;
 
+import static java.lang.String.format;
+
 import java.io.Serializable;
+
+import lombok.NonNull;
 
 import org.icgc.dcc.id.client.http.HttpIdClient;
 import org.icgc.dcc.id.client.util.HashIdClient;
@@ -25,9 +29,13 @@ import org.icgc.dcc.id.client.util.HashIdClient;
 public class IdClientFactory implements Serializable {
 
   private static final String HTTP_ID_CLIENT_CLASSNAME = HttpIdClient.class.getName();
+  private static final String HASH_ID_CLIENT_CLASSNAME = HashIdClient.class.getName();
 
+  @NonNull
   private final String idClassName;
+  @NonNull
   private final String serviceUri;
+  @NonNull
   private final String releaseName;
   private final String authToken;
 
@@ -35,7 +43,7 @@ public class IdClientFactory implements Serializable {
    * Creates {@link HashIdClient}
    */
   public IdClientFactory(String serviceUri, String releaseName) {
-    this.idClassName = HashIdClient.class.getName();
+    this.idClassName = HASH_ID_CLIENT_CLASSNAME;
     this.serviceUri = serviceUri;
     this.releaseName = releaseName;
     this.authToken = null;
@@ -51,11 +59,20 @@ public class IdClientFactory implements Serializable {
     this.authToken = authToken;
   }
 
+  public IdClientFactory(String idClassName, String serviceUri, String releaseName, String authToken) {
+    this.idClassName = idClassName;
+    this.serviceUri = serviceUri;
+    this.releaseName = releaseName;
+    this.authToken = authToken;
+  }
+
   public IdClient create() {
     if (HTTP_ID_CLIENT_CLASSNAME.equals(idClassName)) {
       return new HttpIdClient(serviceUri, releaseName, authToken);
-    } else {
+    } else if (HASH_ID_CLIENT_CLASSNAME.equals(idClassName)) {
       return new HashIdClient(serviceUri, releaseName);
+    } else {
+      throw new IllegalArgumentException(format("%s client is not supported", idClassName));
     }
   }
 
