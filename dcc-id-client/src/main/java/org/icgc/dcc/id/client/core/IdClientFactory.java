@@ -70,8 +70,8 @@ public class IdClientFactory implements Serializable {
         .build();
   }
 
-  public IdClientFactory(@NonNull Config config) {
-    this.idClassName = HTTP_ID_CLIENT_CLASSNAME;
+  public IdClientFactory(@NonNull String idClassName, @NonNull Config config) {
+    this.idClassName = idClassName;
     this.config = config;
   }
 
