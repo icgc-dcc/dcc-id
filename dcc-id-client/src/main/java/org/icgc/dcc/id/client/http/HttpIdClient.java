@@ -21,16 +21,15 @@ import static com.sun.jersey.client.urlconnection.HTTPSProperties.PROPERTY_HTTPS
 import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
 
 import java.io.IOException;
-import java.security.cert.X509Certificate;
+import java.io.Serializable;
 import java.util.Optional;
 
-import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
+import org.icgc.dcc.common.core.security.DumbHostnameVerifier;
+import org.icgc.dcc.common.core.security.DumbX509TrustManager;
 import org.icgc.dcc.id.client.core.IdClient;
 
 import com.sun.jersey.api.client.Client;
@@ -255,8 +254,8 @@ public class HttpIdClient implements IdClient {
     if (!config.isStrictSSLCertificates()) {
       log.debug("Setting up SSL context");
       val context = SSLContext.getInstance("TLS");
-      context.init(null, new TrustManager[] { dummyTrustManager() }, null);
-      val httpsProperties = new HTTPSProperties(dummyHostnameVerifier(), context);
+      context.init(null, new TrustManager[] { new DumbX509TrustManager() }, null);
+      val httpsProperties = new HTTPSProperties(new DumbHostnameVerifier(), context);
 
       clientConfig.getProperties().put(PROPERTY_HTTPS_PROPERTIES, httpsProperties);
     }
@@ -291,36 +290,6 @@ public class HttpIdClient implements IdClient {
     };
   }
 
-  private static X509TrustManager dummyTrustManager() {
-    return new X509TrustManager() {
-
-      @Override
-      public X509Certificate[] getAcceptedIssuers() {
-        return null;
-      }
-
-      @Override
-      public void checkClientTrusted(X509Certificate[] certs, String authType) {
-      }
-
-      @Override
-      public void checkServerTrusted(X509Certificate[] certs, String authType) {
-      }
-
-    };
-  }
-
-  private static HostnameVerifier dummyHostnameVerifier() {
-    return new HostnameVerifier() {
-
-      @Override
-      public boolean verify(String hostname, SSLSession sslSession) {
-        return true;
-      }
-
-    };
-  }
-
   @Override
   public void close() throws IOException {
     log.info("Destroying client...");
@@ -330,7 +299,7 @@ public class HttpIdClient implements IdClient {
 
   @Value
   @Builder
-  public static class Config {
+  public static class Config implements Serializable {
 
     String serviceUrl;
     String release;

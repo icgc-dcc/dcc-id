@@ -24,6 +24,7 @@ import java.io.Serializable;
 import lombok.NonNull;
 
 import org.icgc.dcc.id.client.http.HttpIdClient;
+import org.icgc.dcc.id.client.http.HttpIdClient.Config;
 import org.icgc.dcc.id.client.util.HashIdClient;
 
 public class IdClientFactory implements Serializable {
@@ -34,43 +35,51 @@ public class IdClientFactory implements Serializable {
   @NonNull
   private final String idClassName;
   @NonNull
-  private final String serviceUri;
-  @NonNull
-  private final String releaseName;
-  private final String authToken;
+  private final Config config;
 
   /**
    * Creates {@link HashIdClient}
    */
-  public IdClientFactory(String serviceUri, String releaseName) {
+  public IdClientFactory(@NonNull String serviceUri, @NonNull String releaseName) {
     this.idClassName = HASH_ID_CLIENT_CLASSNAME;
-    this.serviceUri = serviceUri;
-    this.releaseName = releaseName;
-    this.authToken = null;
+    this.config = Config.builder()
+        .serviceUrl(serviceUri)
+        .release(releaseName)
+        .build();
   }
 
   /**
    * Creates {@link HttpIdClient}
    */
-  public IdClientFactory(String serviceUri, String releaseName, String authToken) {
+  public IdClientFactory(@NonNull String serviceUri, @NonNull String releaseName, String authToken) {
     this.idClassName = HTTP_ID_CLIENT_CLASSNAME;
-    this.serviceUri = serviceUri;
-    this.releaseName = releaseName;
-    this.authToken = authToken;
+    this.config = Config.builder()
+        .serviceUrl(serviceUri)
+        .release(releaseName)
+        .authToken(authToken)
+        .build();
   }
 
-  public IdClientFactory(String idClassName, String serviceUri, String releaseName, String authToken) {
+  public IdClientFactory(@NonNull String idClassName, @NonNull String serviceUri, @NonNull String releaseName,
+      String authToken) {
     this.idClassName = idClassName;
-    this.serviceUri = serviceUri;
-    this.releaseName = releaseName;
-    this.authToken = authToken;
+    this.config = Config.builder()
+        .serviceUrl(serviceUri)
+        .release(releaseName)
+        .authToken(authToken)
+        .build();
+  }
+
+  public IdClientFactory(@NonNull Config config) {
+    this.idClassName = HTTP_ID_CLIENT_CLASSNAME;
+    this.config = config;
   }
 
   public IdClient create() {
     if (HTTP_ID_CLIENT_CLASSNAME.equals(idClassName)) {
-      return new HttpIdClient(serviceUri, releaseName, authToken);
+      return new HttpIdClient(config);
     } else if (HASH_ID_CLIENT_CLASSNAME.equals(idClassName)) {
-      return new HashIdClient(serviceUri, releaseName);
+      return new HashIdClient(config.getServiceUrl(), config.getRelease());
     } else {
       throw new IllegalArgumentException(format("%s client is not supported", idClassName));
     }
