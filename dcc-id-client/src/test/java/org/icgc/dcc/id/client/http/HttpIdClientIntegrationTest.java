@@ -39,8 +39,10 @@ public class HttpIdClientIntegrationTest {
         .build());
 
     val submittedFileId = "1";
-    val fileId = client.createFileId(submittedFileId);
-    log.info("fileId: {}", fileId);
+    val fileId1 = client.createFileId(submittedFileId);
+    log.info("fileId1: {}", fileId1);
+    val fileId2 = client.createFileId(submittedFileId);
+    log.info("fileId2: {}", fileId2);
   }
 
 }

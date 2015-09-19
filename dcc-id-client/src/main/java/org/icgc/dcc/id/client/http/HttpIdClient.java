@@ -17,7 +17,6 @@
  */
 package org.icgc.dcc.id.client.http;
 
-import static com.sun.jersey.client.urlconnection.HTTPSProperties.PROPERTY_HTTPS_PROPERTIES;
 import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
 
 import java.io.IOException;
@@ -27,8 +26,9 @@ import java.util.Optional;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.SimpleHttpConnectionManager;
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
-import org.icgc.dcc.common.core.security.DumbHostnameVerifier;
 import org.icgc.dcc.common.core.security.DumbX509TrustManager;
 import org.icgc.dcc.id.client.core.IdClient;
 
@@ -37,11 +37,12 @@ import com.sun.jersey.api.client.ClientHandlerException;
 import com.sun.jersey.api.client.ClientRequest;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.api.client.filter.ClientFilter;
 import com.sun.jersey.api.client.filter.LoggingFilter;
 import com.sun.jersey.api.json.JSONConfiguration;
-import com.sun.jersey.client.urlconnection.HTTPSProperties;
+import com.sun.jersey.client.apache.ApacheHttpClient;
+import com.sun.jersey.client.apache.ApacheHttpClientHandler;
+import com.sun.jersey.client.apache.config.DefaultApacheHttpClientConfig;
 
 import lombok.Builder;
 import lombok.NonNull;
@@ -247,22 +248,28 @@ public class HttpIdClient implements IdClient {
 
   @SneakyThrows
   private static Client createClient(Config config) {
-    val clientConfig = new DefaultClientConfig();
-    clientConfig.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
-    clientConfig.getClasses().add(JacksonJsonProvider.class);
+    val connectionManager = new SimpleHttpConnectionManager();
+
+    connectionManager.getParams().setConnectionTimeout(5000);
+    connectionManager.getParams().setSoTimeout(1000);
+    connectionManager.getParams().setDefaultMaxConnectionsPerHost(10);
+
+    val httpClient = new HttpClient(connectionManager);
+    val clientHandler = new ApacheHttpClientHandler(httpClient);
+    val root = new ApacheHttpClient(clientHandler);
+    val clientConfig = new DefaultApacheHttpClientConfig();
 
     if (!config.isStrictSSLCertificates()) {
       log.debug("Setting up SSL context");
       val context = SSLContext.getInstance("TLS");
       context.init(null, new TrustManager[] { new DumbX509TrustManager() }, null);
-      val httpsProperties = new HTTPSProperties(new DumbHostnameVerifier(), context);
-
-      clientConfig.getProperties().put(PROPERTY_HTTPS_PROPERTIES, httpsProperties);
+      SSLContext.setDefault(context);
     }
 
-    val client = Client.create(clientConfig);
-    client.setConnectTimeout(5000);
-    client.setReadTimeout(5000);
+    clientConfig.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
+    clientConfig.getClasses().add(JacksonJsonProvider.class);
+
+    val client = new Client(root, clientConfig);
 
     if (config.getAuthToken() != null) {
       client.addFilter(oauth2Filter(config));

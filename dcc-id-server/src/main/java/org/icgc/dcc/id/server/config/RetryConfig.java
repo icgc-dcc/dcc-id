@@ -82,7 +82,7 @@ public class RetryConfig {
       public <T, E extends Throwable> void onError(RetryContext context, RetryCallback<T, E> callback,
           Throwable throwable) {
         if (throwable instanceof InvalidTokenException) {
-          // TODO: Verify if this cancells all future retries
+          // TODO: Verify if this cancels all future retries
           this.retry = false;
         }
       }
