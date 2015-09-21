@@ -253,6 +253,7 @@ public class HttpIdClient implements IdClient {
     connectionManager.getParams().setConnectionTimeout(5000);
     connectionManager.getParams().setSoTimeout(1000);
     connectionManager.getParams().setDefaultMaxConnectionsPerHost(10);
+    connectionManager.getParams().setStaleCheckingEnabled(false);
 
     val httpClient = new HttpClient(connectionManager);
     val clientHandler = new ApacheHttpClientHandler(httpClient);
