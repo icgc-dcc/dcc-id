@@ -21,11 +21,20 @@ import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.SocketTimeoutException;
 import java.util.Optional;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.SneakyThrows;
+import lombok.Value;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
+import org.apache.commons.httpclient.ConnectTimeoutException;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.SimpleHttpConnectionManager;
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
@@ -43,13 +52,6 @@ import com.sun.jersey.api.json.JSONConfiguration;
 import com.sun.jersey.client.apache.ApacheHttpClient;
 import com.sun.jersey.client.apache.ApacheHttpClientHandler;
 import com.sun.jersey.client.apache.config.DefaultApacheHttpClientConfig;
-
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.SneakyThrows;
-import lombok.Value;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class HttpIdClient implements IdClient {
@@ -231,6 +233,16 @@ public class HttpIdClient implements IdClient {
       val entity = response.getEntity(String.class);
 
       return Optional.of(entity);
+    } catch (ClientHandlerException e) {
+      val cause = e.getCause();
+      if (retryContext.isRetry() &&
+          (cause instanceof SocketTimeoutException || cause instanceof ConnectTimeoutException)) {
+        log.info("{}", e.getMessage());
+
+        return getResponse(request, waitBeforeRetry(retryContext));
+      }
+
+      throw e;
     } catch (Exception e) {
       log.info("Error requesting {}, {}: {}", request, retryContext, e);
       throw new RuntimeException(e);
@@ -253,7 +265,6 @@ public class HttpIdClient implements IdClient {
     connectionManager.getParams().setConnectionTimeout(5000);
     connectionManager.getParams().setSoTimeout(1000);
     connectionManager.getParams().setDefaultMaxConnectionsPerHost(10);
-    connectionManager.getParams().setStaleCheckingEnabled(false);
 
     val httpClient = new HttpClient(connectionManager);
     val clientHandler = new ApacheHttpClientHandler(httpClient);

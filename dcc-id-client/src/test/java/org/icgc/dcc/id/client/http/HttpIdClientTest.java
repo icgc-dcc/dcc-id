@@ -12,15 +12,14 @@ import static org.icgc.dcc.id.client.http.HttpIdClient.DONOR_ID_PATH;
 import static org.icgc.dcc.id.client.http.HttpIdClient.MUTATION_ID_PATH;
 import static org.icgc.dcc.id.client.http.HttpIdClient.SAMPLE_ID_PATH;
 import static org.icgc.dcc.id.client.http.HttpIdClient.SPECIMEN_ID_PATH;
+import lombok.Cleanup;
+import lombok.val;
 
-import org.icgc.dcc.id.client.http.HttpIdClient;
 import org.icgc.dcc.id.client.http.HttpIdClient.Config;
 import org.junit.Rule;
 import org.junit.Test;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-
-import lombok.val;
 
 public class HttpIdClientTest {
 
@@ -30,7 +29,7 @@ public class HttpIdClientTest {
   @Rule
   public WireMockRule wireMockRule = new WireMockRule(SERVER_PORT);
 
-  HttpIdClient client = new HttpIdClient(createClientConfig());
+  HttpIdClient client = new HttpIdClient(createClientConfig(3));
 
   @Test
   public void testGetDonorId() {
@@ -133,6 +132,28 @@ public class HttpIdClientTest {
   }
 
   @Test
+  public void testSocketTimeOut() {
+
+    val requestUrl =
+        format("%s?submittedDonorId=%s&submittedProjectId=%s&release=ICGC19&create=false", DONOR_ID_PATH, "s2", "p2");
+    stubFor(get(urlEqualTo(requestUrl))
+        .willReturn(aResponse()
+            .withFixedDelay(70000)
+            .withHeader("Content-Type", "text/plain")
+            .withBody(RESPONSE_ID)
+            .withStatus(200)));
+
+    try {
+      @Cleanup
+      val client = new HttpIdClient(createClientConfig(1));
+      client.getDonorId("s2", "p2");
+    } catch (Exception e) {
+    }
+
+    verify(2, getRequestedFor(urlEqualTo(requestUrl)));
+  }
+
+  @Test
   public void test_503() {
     val requestUrl =
         format("%s?submittedDonorId=%s&submittedProjectId=%s&release=ICGC19&create=false", DONOR_ID_PATH, "s2", "p2");
@@ -144,12 +165,12 @@ public class HttpIdClientTest {
     verify(4, getRequestedFor(urlEqualTo(requestUrl)));
   }
 
-  private static Config createClientConfig() {
+  private static Config createClientConfig(int maxRetries) {
     return Config.builder()
         .serviceUrl("http://localhost:" + SERVER_PORT)
         .release("ICGC19")
         .requestLoggingEnabled(true)
-        .maxRetries(3)
+        .maxRetries(maxRetries)
         .retryMultiplier(1f)
         .waitBeforeRetrySeconds(1)
         .build();
