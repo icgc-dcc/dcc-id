@@ -21,6 +21,7 @@ import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.Optional;
 
@@ -235,8 +236,7 @@ public class HttpIdClient implements IdClient {
       return Optional.of(entity);
     } catch (ClientHandlerException e) {
       val cause = e.getCause();
-      if (retryContext.isRetry() &&
-          (cause instanceof SocketTimeoutException || cause instanceof ConnectTimeoutException)) {
+      if (retryContext.isRetry() && isRetryException(cause)) {
         log.info("{}", e.getMessage());
 
         return getResponse(request, waitBeforeRetry(retryContext));
@@ -247,6 +247,11 @@ public class HttpIdClient implements IdClient {
       log.info("Error requesting {}, {}: {}", request, retryContext, e);
       throw new RuntimeException(e);
     }
+  }
+
+  private static boolean isRetryException(Throwable cause) {
+    return cause instanceof SocketTimeoutException || cause instanceof ConnectTimeoutException
+        || cause instanceof SocketException;
   }
 
   @SneakyThrows
@@ -265,6 +270,7 @@ public class HttpIdClient implements IdClient {
     connectionManager.getParams().setConnectionTimeout(5000);
     connectionManager.getParams().setSoTimeout(1000);
     connectionManager.getParams().setDefaultMaxConnectionsPerHost(10);
+    connectionManager.getParams().setStaleCheckingEnabled(false);
 
     val httpClient = new HttpClient(connectionManager);
     val clientHandler = new ApacheHttpClientHandler(httpClient);
