@@ -9,7 +9,7 @@
   </parent>
 
   <artifactId>dcc-id</artifactId>
-  <version>0.0.17</version>
+  <version>0.0.18-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>${project.artifactId}</name>
