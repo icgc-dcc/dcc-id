@@ -340,8 +340,8 @@ public class HttpIdClient implements IdClient {
       val builder = new ConfigBuilder();
       builder.requestLoggingEnabled(false);
       builder.maxRetries(10);
-      builder.waitBeforeRetrySeconds(15);
-      builder.retryMultiplier(2.0f);
+      builder.waitBeforeRetrySeconds(3);
+      builder.retryMultiplier(1.5f);
       builder.strictSSLCertificates(true);
 
       return builder;
