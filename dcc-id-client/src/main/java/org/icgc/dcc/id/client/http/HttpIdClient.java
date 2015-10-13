@@ -267,8 +267,8 @@ public class HttpIdClient implements IdClient {
   private static Client createClient(Config config) {
     val connectionManager = new SimpleHttpConnectionManager();
 
-    connectionManager.getParams().setConnectionTimeout(5000);
-    connectionManager.getParams().setSoTimeout(1000);
+    connectionManager.getParams().setConnectionTimeout(30000);
+    connectionManager.getParams().setSoTimeout(60000);
     connectionManager.getParams().setDefaultMaxConnectionsPerHost(10);
     connectionManager.getParams().setStaleCheckingEnabled(false);
 
