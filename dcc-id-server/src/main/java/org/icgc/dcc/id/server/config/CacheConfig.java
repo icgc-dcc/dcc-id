@@ -18,26 +18,26 @@
 package org.icgc.dcc.id.server.config;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
-import static net.sf.ehcache.config.PersistenceConfiguration.Strategy.LOCALTEMPSWAP;
+import static net.sf.ehcache.config.PersistenceConfiguration.Strategy.NONE;
 
 import javax.management.MBeanServer;
-
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cache.CacheManager;
-import org.springframework.cache.annotation.CachingConfigurerSupport;
-import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.cache.ehcache.EhCacheCacheManager;
-import org.springframework.cache.interceptor.KeyGenerator;
-import org.springframework.cache.interceptor.SimpleKeyGenerator;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.jmx.support.MBeanServerFactoryBean;
 
 import lombok.val;
 import net.sf.ehcache.config.CacheConfiguration;
 import net.sf.ehcache.config.DiskStoreConfiguration;
 import net.sf.ehcache.config.PersistenceConfiguration;
 import net.sf.ehcache.management.ManagementService;
+
+import org.icgc.dcc.id.server.provider.StringHashKeyGenerator;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CachingConfigurerSupport;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cache.ehcache.EhCacheCacheManager;
+import org.springframework.cache.interceptor.KeyGenerator;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.jmx.support.MBeanServerFactoryBean;
 
 /**
  * Server wide caching configuration.
@@ -48,6 +48,16 @@ public class CacheConfig extends CachingConfigurerSupport {
 
   @Value("${cache.dir}")
   private String cacheDir;
+  @Value("${cache.size.mutation}")
+  private String mutationSize;
+  @Value("${cache.size.donor}")
+  private String donorSize;
+  @Value("${cache.size.file}")
+  private String fileSize;
+  @Value("${cache.size.sample}")
+  private String sampleSize;
+  @Value("${cache.size.speciment}")
+  private String specimentSize;
 
   @Bean(destroyMethod = "shutdown")
   public net.sf.ehcache.CacheManager ehCacheManager() {
@@ -57,12 +67,12 @@ public class CacheConfig extends CachingConfigurerSupport {
     tokens.setMaxEntriesLocalHeap(100);
 
     // In-memory caches
-    val projectIds = createMemoryCache("projectIds");
-    val donorIds = createMemoryCache("donorIds");
-    val specimenIds = createMemoryCache("specimenIds");
-    val sampleIds = createMemoryCache("sampleIds");
-    val fileIds = createMemoryCache("fileIds");
-    val mutationIds = createMemoryCache("mutationIds");
+    val projectIds = createMemoryCache("projectIds", getCacheSize("1")); // 1M
+    val donorIds = createMemoryCache("donorIds", getCacheSize(donorSize));
+    val specimenIds = createMemoryCache("specimenIds", getCacheSize(specimentSize));
+    val sampleIds = createMemoryCache("sampleIds", getCacheSize(sampleSize));
+    val fileIds = createMemoryCache("fileIds", getCacheSize(fileSize));
+    val mutationIds = createMemoryCache("mutationIds", getCacheSize(mutationSize));
 
     val config = new net.sf.ehcache.config.Configuration();
     config.addCache(tokens);
@@ -86,7 +96,7 @@ public class CacheConfig extends CachingConfigurerSupport {
   @Bean
   @Override
   public KeyGenerator keyGenerator() {
-    return new SimpleKeyGenerator();
+    return new StringHashKeyGenerator();
   }
 
   @Bean(initMethod = "init", destroyMethod = "dispose")
@@ -104,11 +114,13 @@ public class CacheConfig extends CachingConfigurerSupport {
     return factory.getObject();
   }
 
-  private static CacheConfiguration createMemoryCache(String name) {
+  private static CacheConfiguration createMemoryCache(String name, long maxBytesHeap) {
     val cache = new CacheConfiguration();
     cache.setName(name);
-    cache.setMaxEntriesLocalDisk(0); // Unlimited
-    cache.setMaxEntriesLocalHeap(0); // Unlimited
+    // cache.setMaxEntriesLocalDisk(0); // Unlimited
+    // cache.setMaxEntriesLocalHeap(0); // Unlimited
+    cache.setMaxBytesLocalHeap(maxBytesHeap);
+    cache.overflowToOffHeap(false);
     cache.setEternal(true); // Never expire
     cache.persistence(createPersistenceConfig());
 
@@ -116,7 +128,15 @@ public class CacheConfig extends CachingConfigurerSupport {
   }
 
   private static PersistenceConfiguration createPersistenceConfig() {
-    return new PersistenceConfiguration().strategy(LOCALTEMPSWAP);
+    return new PersistenceConfiguration().strategy(NONE);
+  }
+
+  /**
+   * @param cacheSize in MBytes
+   * @return
+   */
+  private static long getCacheSize(String cacheSize) {
+    return Long.parseLong(cacheSize) * 1024L * 1024L;
   }
 
 }

@@ -42,7 +42,7 @@ public class DonorController {
   private final DonorRepository repository;
 
   @PreAuthorize(AUTHORIZATION_EXPRESSION)
-  @Cacheable(value = "donorIds", key = "{ #submittedDonorId, #submittedProjectId }")
+  @Cacheable(value = "donorIds", keyGenerator = "keyGenerator")
   @RequestMapping(value = "/id", method = GET)
   public String donorId(
       // Required

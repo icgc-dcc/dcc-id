@@ -42,7 +42,7 @@ public class SampleController {
   private final SampleRepository repository;
 
   @PreAuthorize(AUTHORIZATION_EXPRESSION)
-  @Cacheable(value = "sampleIds", key = "{ #submittedSampleId, #submittedProjectId }")
+  @Cacheable(value = "sampleIds", keyGenerator = "keyGenerator")
   @RequestMapping(value = "/id", method = GET)
   public String sampleId(
       // Required

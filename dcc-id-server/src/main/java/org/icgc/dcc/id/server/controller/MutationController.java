@@ -42,7 +42,7 @@ public class MutationController {
   private final MutationRepository repository;
 
   @PreAuthorize(AUTHORIZATION_EXPRESSION)
-  @Cacheable(value = "mutationIds", key = "{ #chromosome, #chromosomeStart, #chromosomeEnd, #mutation, #mutationType, #assemblyVersion }")
+  @Cacheable(value = "mutationIds", keyGenerator = "keyGenerator")
   @RequestMapping(value = "/id", method = GET)
   public String mutationId(
       // Required

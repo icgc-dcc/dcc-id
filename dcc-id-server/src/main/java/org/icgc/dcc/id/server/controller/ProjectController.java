@@ -42,7 +42,7 @@ public class ProjectController {
   private final ProjectRepository repository;
 
   @PreAuthorize(AUTHORIZATION_EXPRESSION)
-  @Cacheable(value = "projectIds", key = "{ #submittedProjectId }")
+  @Cacheable(value = "projectIds", keyGenerator = "keyGenerator")
   @RequestMapping(value = "/id", method = GET)
   public String projectId(
       // Required
