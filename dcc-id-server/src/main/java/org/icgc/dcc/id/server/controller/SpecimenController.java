@@ -42,7 +42,7 @@ public class SpecimenController {
   private final SpecimenRepository repository;
 
   @PreAuthorize(AUTHORIZATION_EXPRESSION)
-  @Cacheable(value = "specimenIds", keyGenerator = "keyGenerator")
+  @Cacheable(value = "specimenIds", key = "{ #submittedSpecimenId, #submittedProjectId }")
   @RequestMapping(value = "/id", method = GET)
   public String specimenId(
       // Required

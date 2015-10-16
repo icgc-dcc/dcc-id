@@ -28,13 +28,13 @@ import net.sf.ehcache.config.DiskStoreConfiguration;
 import net.sf.ehcache.config.PersistenceConfiguration;
 import net.sf.ehcache.management.ManagementService;
 
-import org.icgc.dcc.id.server.provider.StringHashKeyGenerator;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CachingConfigurerSupport;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.ehcache.EhCacheCacheManager;
 import org.springframework.cache.interceptor.KeyGenerator;
+import org.springframework.cache.interceptor.SimpleKeyGenerator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jmx.support.MBeanServerFactoryBean;
@@ -96,7 +96,7 @@ public class CacheConfig extends CachingConfigurerSupport {
   @Bean
   @Override
   public KeyGenerator keyGenerator() {
-    return new StringHashKeyGenerator();
+    return new SimpleKeyGenerator();
   }
 
   @Bean(initMethod = "init", destroyMethod = "dispose")
