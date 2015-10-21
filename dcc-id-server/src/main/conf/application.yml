@@ -28,7 +28,7 @@ cache:
     donor: 32
     file: 32
     sample: 32
-    speciment: 8
+    specimen: 8
 
 # Management endpoints
 management:
