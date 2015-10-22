@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.id.client.http;
 
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.base.Strings.isNullOrEmpty;
 import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
 
 import java.io.IOException;
@@ -100,7 +102,11 @@ public class HttpIdClient implements IdClient {
   @Override
   @NonNull
   public String createDonorId(String submittedDonorId, String submittedProjectId) {
-    return getDonorId(submittedDonorId, submittedProjectId, true).get();
+    val donorId = getDonorId(submittedDonorId, submittedProjectId, true).get();
+    checkState(!isNullOrEmpty(donorId), "Failed to create donor id. submittedDonorId: '%s', submittedProjectId: '%s'",
+        submittedDonorId, submittedProjectId);
+
+    return donorId;
   }
 
   private Optional<String> getDonorId(@NonNull String submittedDonorId, @NonNull String submittedProjectId,
@@ -122,7 +128,11 @@ public class HttpIdClient implements IdClient {
 
   @Override
   public String createSpecimenId(@NonNull String submittedSpecimenId, @NonNull String submittedProjectId) {
-    return getSpecimenId(submittedSpecimenId, submittedProjectId, true).get();
+    val specimenId = getSpecimenId(submittedSpecimenId, submittedProjectId, true).get();
+    checkState(!isNullOrEmpty(specimenId), "Failed to create specimen id. submittedSpecimenId: '%s', "
+        + "submittedProjectId: '%s'", submittedSpecimenId, submittedProjectId);
+
+    return specimenId;
   }
 
   private Optional<String> getSpecimenId(String submittedSpecimenId, String submittedProjectId, boolean create) {
@@ -143,7 +153,11 @@ public class HttpIdClient implements IdClient {
 
   @Override
   public String createSampleId(@NonNull String submittedSampleId, @NonNull String submittedProjectId) {
-    return getSampleId(submittedSampleId, submittedProjectId, true).get();
+    val sampleId = getSampleId(submittedSampleId, submittedProjectId, true).get();
+    checkState(!isNullOrEmpty(sampleId), "Failed to create sample id. submittedSampleId: '%s', "
+        + "submittedProjectId: '%s'", submittedSampleId, submittedProjectId);
+
+    return sampleId;
   }
 
   private Optional<String> getSampleId(String submittedSampleId, String submittedProjectId, boolean create) {
@@ -168,8 +182,13 @@ public class HttpIdClient implements IdClient {
   public String createMutationId(@NonNull String chromosome, @NonNull String chromosomeStart,
       @NonNull String chromosomeEnd, @NonNull String mutation,
       @NonNull String mutationType, @NonNull String assemblyVersion) {
-    return getMutationId(chromosome, chromosomeStart, chromosomeEnd, mutation, mutationType, assemblyVersion, true)
-        .get();
+    val mutationId = getMutationId(chromosome, chromosomeStart, chromosomeEnd, mutation, mutationType, assemblyVersion,
+        true).get();
+    checkState(!isNullOrEmpty(mutationId), "Failed to create mutation id. chromosome: '%s', chromosomeStart: '%s', "
+        + "chromosomeEnd: '%s', mutation: '%s', mutationType: '%s', assemblyVersion: '%s'", chromosome,
+        chromosomeStart, chromosomeEnd, mutation, mutationType, assemblyVersion);
+
+    return mutationId;
   }
 
   private Optional<String> getMutationId(String chromosome, String chromosomeStart, String chromosomeEnd,
@@ -195,7 +214,10 @@ public class HttpIdClient implements IdClient {
 
   @Override
   public String createFileId(@NonNull String submittedFileId) {
-    return getFileId(submittedFileId, true).get();
+    val fileId = getFileId(submittedFileId, true).get();
+    checkState(!isNullOrEmpty(fileId), "Failed to create file id. submittedFileId: '%s'", submittedFileId);
+
+    return fileId;
   }
 
   private Optional<String> getFileId(String submittedFileId, boolean create) {
