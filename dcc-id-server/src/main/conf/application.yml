@@ -13,15 +13,22 @@ spring:
 server:
   port: 8443
   tomcat:
-    max-threads: 200
-  ssl:
-    key-store: src/main/conf/keystore.p12
-    key-store-type: PKCS12
-    key-store-password: ***REMOVED***
+    max-threads: 50
+#  ssl:
+#    key-store: src/main/conf/keystore.p12
+#    key-store-type: PKCS12
+#    key-store-password: ***REMOVED***
 
 # Caching
 cache:
   dir: /tmp/dcc-id
+  # Size calculations are made according to the current number of ids in the database and assumes JVM heap is atleast 6GB
+  size:
+    mutation: 3584
+    donor: 32
+    file: 32
+    sample: 32
+    specimen: 8
 
 # Management endpoints
 management:
