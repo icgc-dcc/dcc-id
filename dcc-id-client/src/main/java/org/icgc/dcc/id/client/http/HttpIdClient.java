@@ -43,6 +43,8 @@ import org.apache.commons.httpclient.SimpleHttpConnectionManager;
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
 import org.icgc.dcc.common.core.security.DumbX509TrustManager;
 import org.icgc.dcc.id.client.core.IdClient;
+import org.icgc.dcc.id.core.ExhaustedRetryException;
+import org.icgc.dcc.id.core.IdentifierException;
 
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientHandlerException;
@@ -240,20 +242,25 @@ public class HttpIdClient implements IdClient {
   private Optional<String> getResponse(WebResource request, RetryContext retryContext) {
     try {
       val response = request.get(ClientResponse.class);
-      if (response.getStatus() == 401 || response.getStatus() == 403) {
-        throw new RuntimeException(response.getEntity(String.class));
+      if (response.getStatus() == 401 || response.getStatus() == 403 || response.getStatus() == 500) {
+        throw new IdentifierException(response.getEntity(String.class));
       }
 
       if (response.getStatus() == 404) {
         return Optional.empty();
       }
 
-      if (response.getStatus() == 503 && retryContext.isRetry()) {
-        log.warn("Could not get {}", request);
-        return getResponse(request, waitBeforeRetry(retryContext));
+      if (response.getStatus() == 503) {
+        if (retryContext.isRetry()) {
+          log.warn("Could not get {}", request);
+          return getResponse(request, waitBeforeRetry(retryContext));
+        } else {
+          throw new ExhaustedRetryException();
+        }
       }
 
       val entity = response.getEntity(String.class);
+      validateEntity(entity);
 
       return Optional.of(entity);
     } catch (ClientHandlerException e) {
@@ -265,10 +272,17 @@ public class HttpIdClient implements IdClient {
       }
 
       throw e;
+    } catch (ExhaustedRetryException e) {
+      log.error("Failed to request ID because of exhaused retries. Request: {}", request);
+      throw e;
     } catch (Exception e) {
       log.info("Error requesting {}, {}: {}", request, retryContext, e);
-      throw new RuntimeException(e);
+      throw new IdentifierException(e);
     }
+  }
+
+  private static void validateEntity(String entity) {
+    Long.parseLong(entity);
   }
 
   private static boolean isRetryException(Throwable cause) {
