@@ -16,6 +16,8 @@ import lombok.Cleanup;
 import lombok.val;
 
 import org.icgc.dcc.id.client.http.HttpIdClient.Config;
+import org.icgc.dcc.id.core.ExhaustedRetryException;
+import org.icgc.dcc.id.core.IdentifierException;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -24,7 +26,7 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
 public class HttpIdClientTest {
 
   private static final int SERVER_PORT = 22223;
-  private static final String RESPONSE_ID = "valid response id";
+  private static final String RESPONSE_ID = "1000";
 
   @Rule
   public WireMockRule wireMockRule = new WireMockRule(SERVER_PORT);
@@ -161,8 +163,22 @@ public class HttpIdClientTest {
         .willReturn(aResponse()
             .withStatus(503)));
 
+    try {
+      client.getDonorId("s2", "p2");
+    } catch (ExhaustedRetryException e) {
+      verify(4, getRequestedFor(urlEqualTo(requestUrl)));
+    }
+  }
+
+  @Test(expected = IdentifierException.class)
+  public void test_500() {
+    val requestUrl =
+        format("%s?submittedDonorId=%s&submittedProjectId=%s&release=ICGC19&create=false", DONOR_ID_PATH, "s2", "p2");
+    stubFor(get(urlEqualTo(requestUrl))
+        .willReturn(aResponse()
+            .withStatus(500)));
+
     client.getDonorId("s2", "p2");
-    verify(4, getRequestedFor(urlEqualTo(requestUrl)));
   }
 
   private static Config createClientConfig(int maxRetries) {
