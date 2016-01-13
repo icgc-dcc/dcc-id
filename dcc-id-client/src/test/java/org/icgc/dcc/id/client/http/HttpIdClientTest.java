@@ -140,7 +140,7 @@ public class HttpIdClientTest {
         format("%s?submittedDonorId=%s&submittedProjectId=%s&release=ICGC19&create=false", DONOR_ID_PATH, "s2", "p2");
     stubFor(get(urlEqualTo(requestUrl))
         .willReturn(aResponse()
-            .withFixedDelay(60000)
+            .withFixedDelay(70000)
             .withHeader("Content-Type", "text/plain")
             .withBody(RESPONSE_ID)
             .withStatus(200)));
