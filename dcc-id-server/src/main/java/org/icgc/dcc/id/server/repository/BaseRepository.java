@@ -21,9 +21,10 @@ import static java.lang.String.format;
 
 import java.util.Arrays;
 
-import org.skife.jdbi.v2.exceptions.UnableToExecuteStatementException;
-
 import lombok.val;
+
+import org.icgc.dcc.id.util.Ids;
+import org.skife.jdbi.v2.exceptions.UnableToExecuteStatementException;
 
 public abstract class BaseRepository {
 
@@ -127,7 +128,7 @@ public abstract class BaseRepository {
    * @return the formatted id
    */
   private String formatId(Long id) {
-    return format("%s%s", getPrefix(), id);
+    return Ids.formatId(getPrefix(), id);
   }
 
   /**

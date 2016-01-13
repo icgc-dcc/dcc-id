@@ -12,12 +12,17 @@ import static org.icgc.dcc.id.client.http.HttpIdClient.DONOR_ID_PATH;
 import static org.icgc.dcc.id.client.http.HttpIdClient.MUTATION_ID_PATH;
 import static org.icgc.dcc.id.client.http.HttpIdClient.SAMPLE_ID_PATH;
 import static org.icgc.dcc.id.client.http.HttpIdClient.SPECIMEN_ID_PATH;
+import static org.icgc.dcc.id.core.Prefixes.DONOR_ID_PREFIX;
+import static org.icgc.dcc.id.core.Prefixes.MUTATION_ID_PREFIX;
+import static org.icgc.dcc.id.core.Prefixes.SAMPLE_ID_PREFIX;
+import static org.icgc.dcc.id.core.Prefixes.SPECIMEN_ID_PREFIX;
 import lombok.Cleanup;
 import lombok.val;
 
 import org.icgc.dcc.id.client.http.HttpIdClient.Config;
 import org.icgc.dcc.id.core.ExhaustedRetryException;
 import org.icgc.dcc.id.core.IdentifierException;
+import org.icgc.dcc.id.util.Ids;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -26,7 +31,7 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
 public class HttpIdClientTest {
 
   private static final int SERVER_PORT = 22223;
-  private static final String RESPONSE_ID = "1000";
+  private static final Long RESPONSE_ID = 1000L;
 
   @Rule
   public WireMockRule wireMockRule = new WireMockRule(SERVER_PORT);
@@ -38,10 +43,10 @@ public class HttpIdClientTest {
     val requestUrl =
         format("%s?submittedDonorId=%s&submittedProjectId=%s&release=ICGC19&create=false", DONOR_ID_PATH, "s1",
             "p1");
-    configureSuccessfulResponse(requestUrl);
+    configureSuccessfulResponse(requestUrl, DONOR_ID_PREFIX);
 
     val response = client.getDonorId("s1", "p1");
-    assertThat(response.get()).isEqualTo(RESPONSE_ID);
+    assertThat(response.get()).isEqualTo(createId(DONOR_ID_PREFIX));
   }
 
   @Test
@@ -49,30 +54,30 @@ public class HttpIdClientTest {
     val requestUrl =
         format("%s?submittedDonorId=%s&submittedProjectId=%s&release=ICGC19&create=true", DONOR_ID_PATH, "s1",
             "p1");
-    configureSuccessfulResponse(requestUrl);
+    configureSuccessfulResponse(requestUrl, DONOR_ID_PREFIX);
 
     val response = client.createDonorId("s1", "p1");
-    assertThat(response).isEqualTo(RESPONSE_ID);
+    assertThat(response).isEqualTo(createId(DONOR_ID_PREFIX));
   }
 
   @Test
   public void testGetMutationId() {
     val requestUrl = format("%s?chromosome=%s&chromosomeStart=%s&chromosomeEnd=%s&mutation=%s&mutationType=%s&"
         + "assemblyVersion=%s&release=ICGC19&create=false", MUTATION_ID_PATH, "x", "1", "2", "a_b", "ssm", "1");
-    configureSuccessfulResponse(requestUrl);
+    configureSuccessfulResponse(requestUrl, MUTATION_ID_PREFIX);
 
     val response = client.getMutationId("x", "1", "2", "a_b", "ssm", "1");
-    assertThat(response.get()).isEqualTo(RESPONSE_ID);
+    assertThat(response.get()).isEqualTo(createId(MUTATION_ID_PREFIX));
   }
 
   @Test
   public void testCreateMutationId() {
     val requestUrl = format("%s?chromosome=%s&chromosomeStart=%s&chromosomeEnd=%s&mutation=%s&mutationType=%s&"
         + "assemblyVersion=%s&release=ICGC19&create=true", MUTATION_ID_PATH, "x", "1", "2", "a_b", "ssm", "1");
-    configureSuccessfulResponse(requestUrl);
+    configureSuccessfulResponse(requestUrl, MUTATION_ID_PREFIX);
 
     val response = client.createMutationId("x", "1", "2", "a_b", "ssm", "1");
-    assertThat(response).isEqualTo(RESPONSE_ID);
+    assertThat(response).isEqualTo(createId(MUTATION_ID_PREFIX));
   }
 
   @Test
@@ -80,10 +85,10 @@ public class HttpIdClientTest {
     val requestUrl =
         format("%s?submittedSampleId=%s&submittedProjectId=%s&release=ICGC19&create=false", SAMPLE_ID_PATH, "s1",
             "p1");
-    configureSuccessfulResponse(requestUrl);
+    configureSuccessfulResponse(requestUrl, SAMPLE_ID_PREFIX);
 
     val response = client.getSampleId("s1", "p1");
-    assertThat(response.get()).isEqualTo(RESPONSE_ID);
+    assertThat(response.get()).isEqualTo(createId(SAMPLE_ID_PREFIX));
   }
 
   @Test
@@ -91,10 +96,10 @@ public class HttpIdClientTest {
     val requestUrl =
         format("%s?submittedSampleId=%s&submittedProjectId=%s&release=ICGC19&create=true", SAMPLE_ID_PATH, "s1",
             "p1");
-    configureSuccessfulResponse(requestUrl);
+    configureSuccessfulResponse(requestUrl, SAMPLE_ID_PREFIX);
 
     val response = client.createSampleId("s1", "p1");
-    assertThat(response).isEqualTo(RESPONSE_ID);
+    assertThat(response).isEqualTo(createId(SAMPLE_ID_PREFIX));
   }
 
   @Test
@@ -102,10 +107,10 @@ public class HttpIdClientTest {
     val requestUrl =
         format("%s?submittedSpecimenId=%s&submittedProjectId=%s&release=ICGC19&create=false", SPECIMEN_ID_PATH, "s1",
             "p1");
-    configureSuccessfulResponse(requestUrl);
+    configureSuccessfulResponse(requestUrl, SPECIMEN_ID_PREFIX);
 
     val response = client.getSpecimenId("s1", "p1");
-    assertThat(response.get()).isEqualTo(RESPONSE_ID);
+    assertThat(response.get()).isEqualTo(createId(SPECIMEN_ID_PREFIX));
   }
 
   @Test
@@ -113,18 +118,10 @@ public class HttpIdClientTest {
     val requestUrl =
         format("%s?submittedSpecimenId=%s&submittedProjectId=%s&release=ICGC19&create=true", SPECIMEN_ID_PATH, "s1",
             "p1");
-    configureSuccessfulResponse(requestUrl);
+    configureSuccessfulResponse(requestUrl, SPECIMEN_ID_PREFIX);
 
     val response = client.createSpecimenId("s1", "p1");
-    assertThat(response).isEqualTo(RESPONSE_ID);
-  }
-
-  private void configureSuccessfulResponse(String requestUrl) {
-    stubFor(get(urlEqualTo(requestUrl))
-        .willReturn(aResponse()
-            .withStatus(200)
-            .withHeader("Content-Type", "text/plain")
-            .withBody(RESPONSE_ID)));
+    assertThat(response).isEqualTo(createId(SPECIMEN_ID_PREFIX));
   }
 
   @Test
@@ -142,7 +139,7 @@ public class HttpIdClientTest {
         .willReturn(aResponse()
             .withFixedDelay(70000)
             .withHeader("Content-Type", "text/plain")
-            .withBody(RESPONSE_ID)
+            .withBody(createId(""))
             .withStatus(200)));
 
     try {
@@ -190,6 +187,18 @@ public class HttpIdClientTest {
         .retryMultiplier(1f)
         .waitBeforeRetrySeconds(1)
         .build();
+  }
+
+  private static void configureSuccessfulResponse(String requestUrl, String prefix) {
+    stubFor(get(urlEqualTo(requestUrl))
+        .willReturn(aResponse()
+            .withStatus(200)
+            .withHeader("Content-Type", "text/plain")
+            .withBody(createId(prefix))));
+  }
+
+  private static String createId(String prefix) {
+    return Ids.formatId(prefix, RESPONSE_ID);
   }
 
 }

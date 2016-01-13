@@ -20,6 +20,12 @@ package org.icgc.dcc.id.client.http;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
+import static org.icgc.dcc.id.core.Prefixes.DONOR_ID_PREFIX;
+import static org.icgc.dcc.id.core.Prefixes.FILE_ID_PREFIX;
+import static org.icgc.dcc.id.core.Prefixes.MUTATION_ID_PREFIX;
+import static org.icgc.dcc.id.core.Prefixes.SAMPLE_ID_PREFIX;
+import static org.icgc.dcc.id.core.Prefixes.SPECIMEN_ID_PREFIX;
+import static org.icgc.dcc.id.util.Ids.validateId;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -120,7 +126,10 @@ public class HttpIdClient implements IdClient {
         .queryParam("release", release)
         .queryParam("create", String.valueOf(create));
 
-    return getResponse(request);
+    val id = getResponse(request);
+    validateId(id, DONOR_ID_PREFIX);
+
+    return id;
   }
 
   @Override
@@ -145,7 +154,10 @@ public class HttpIdClient implements IdClient {
         .queryParam("release", release)
         .queryParam("create", String.valueOf(create));
 
-    return getResponse(request);
+    val id = getResponse(request);
+    validateId(id, SPECIMEN_ID_PREFIX);
+
+    return id;
   }
 
   @Override
@@ -170,7 +182,10 @@ public class HttpIdClient implements IdClient {
         .queryParam("release", release)
         .queryParam("create", String.valueOf(create));
 
-    return getResponse(request);
+    val id = getResponse(request);
+    validateId(id, SAMPLE_ID_PREFIX);
+
+    return id;
   }
 
   @Override
@@ -206,7 +221,10 @@ public class HttpIdClient implements IdClient {
         .queryParam("release", release)
         .queryParam("create", String.valueOf(create));
 
-    return getResponse(request);
+    val id = getResponse(request);
+    validateId(id, MUTATION_ID_PREFIX);
+
+    return id;
   }
 
   @Override
@@ -228,7 +246,10 @@ public class HttpIdClient implements IdClient {
         .queryParam("submittedFileId", submittedFileId)
         .queryParam("create", String.valueOf(create));
 
-    return getResponse(request);
+    val id = getResponse(request);
+    validateId(id, FILE_ID_PREFIX);
+
+    return id;
   }
 
   /*
@@ -260,7 +281,6 @@ public class HttpIdClient implements IdClient {
       }
 
       val entity = response.getEntity(String.class);
-      validateEntity(entity);
 
       return Optional.of(entity);
     } catch (ClientHandlerException e) {
@@ -279,10 +299,6 @@ public class HttpIdClient implements IdClient {
       log.info("Error requesting {}, {}: {}", request, retryContext, e);
       throw new IdentifierException(e);
     }
-  }
-
-  private static void validateEntity(String entity) {
-    Long.parseLong(entity);
   }
 
   private static boolean isRetryException(Throwable cause) {
