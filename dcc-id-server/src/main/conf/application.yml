@@ -31,10 +31,6 @@ server:
   port: 8443
   tomcat:
     max-threads: 50
-#  ssl:
-#    key-store: src/main/conf/keystore.p12
-#    key-store-type: PKCS12
-#    key-store-password: ***REMOVED***
 
 # Caching
 cache:
@@ -66,7 +62,7 @@ spring:
   
 # JDBC
 spring.datasource:
-  url: jdbc:postgresql://***REMOVED***/dcc_identifier
+  url: jdbc:postgresql://<host>:<port>/dcc_identifier
   username: <username>
   password: <password>
   driverClassName: org.postgresql.Driver
@@ -114,7 +110,7 @@ spring:
 # OAuth authentication server
 auth:
   server:
-    url: https://***REMOVED***/oauth/check_token
+    url: https://<host>/oauth/check_token
     clientId: <id>
     clientsecret: <password>
     

@@ -34,6 +34,11 @@ import org.junit.Test;
 @Ignore
 public class HttpIdClientIntegrationTest {
 
+  private static final String ID_SERVER_URL = "https://<host>";
+  private static final String RELEASE_NAME = "<release_name>";
+  private static final String PROJECT_ID = "<project_name>";
+  private static final String AUTH_TOKEN = "<auth_token>";
+
   private static final List<String> DONOR_IDS = Arrays.asList(
       "4174884",
       "4119279",
@@ -134,8 +139,6 @@ public class HttpIdClientIntegrationTest {
       "4109956"
       );
 
-  private static final String PROJECT_ID = "***REMOVED***";
-
   @Test
   public void testClient() throws Exception {
     @Cleanup
@@ -155,9 +158,9 @@ public class HttpIdClientIntegrationTest {
 
   @Test
   public void testClientPerformance() {
-    val url = "***REMOVED***";
-    val release = "ICGC19";
-    val authToken = "zzz";
+    val url = ID_SERVER_URL;
+    val release = RELEASE_NAME;
+    val authToken = AUTH_TOKEN;
     val client = new IdClientFactory(url, release, authToken).create();
 
     try {
