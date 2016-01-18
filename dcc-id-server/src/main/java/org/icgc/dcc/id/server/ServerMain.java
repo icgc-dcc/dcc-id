@@ -18,15 +18,18 @@
  */
 package org.icgc.dcc.id.server;
 
+import lombok.NoArgsConstructor;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.actuate.autoconfigure.ManagementSecurityAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.SecurityAutoConfiguration;
 
+@NoArgsConstructor
 @SpringBootApplication(exclude = { SecurityAutoConfiguration.class, ManagementSecurityAutoConfiguration.class })
 public class ServerMain {
 
-  public static void main(String[] args) throws Exception {
+  public static void main(String... args) {
     SpringApplication.run(ServerMain.class, args);
   }
 

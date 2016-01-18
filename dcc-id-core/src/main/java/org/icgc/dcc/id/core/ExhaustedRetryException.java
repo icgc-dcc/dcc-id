@@ -17,4 +17,7 @@
  */
 package org.icgc.dcc.id.core;
 
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor
 public class ExhaustedRetryException extends RuntimeException {}

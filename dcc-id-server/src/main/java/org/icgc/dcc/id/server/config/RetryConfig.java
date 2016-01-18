@@ -20,6 +20,8 @@ package org.icgc.dcc.id.server.config;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.icgc.dcc.id.server.retry.RetryPolicies.getRetryableExceptions;
 import static org.springframework.retry.backoff.ExponentialBackOffPolicy.DEFAULT_MULTIPLIER;
+import lombok.NoArgsConstructor;
+import lombok.val;
 
 import org.icgc.dcc.id.server.retry.ClientRetryListener;
 import org.icgc.dcc.id.server.retry.DefaultRetryListener;
@@ -36,8 +38,7 @@ import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.security.oauth2.common.exceptions.InvalidTokenException;
 
-import lombok.val;
-
+@NoArgsConstructor
 @Configuration
 @Profile("secure")
 public class RetryConfig {

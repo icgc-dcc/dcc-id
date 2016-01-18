@@ -17,6 +17,9 @@
  */
 package org.icgc.dcc.id.server.config;
 
+import lombok.NoArgsConstructor;
+import lombok.val;
+
 import org.icgc.dcc.id.server.oauth.RetryTokenServices;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -26,8 +29,7 @@ import org.springframework.security.oauth2.provider.token.AccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.DefaultAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.RemoteTokenServices;
 
-import lombok.val;
-
+@NoArgsConstructor
 @Configuration
 @Profile("secure")
 public class TokenServiceConfig {

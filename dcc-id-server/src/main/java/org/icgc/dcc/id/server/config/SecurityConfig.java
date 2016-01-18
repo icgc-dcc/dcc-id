@@ -17,6 +17,9 @@
  */
 package org.icgc.dcc.id.server.config;
 
+import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
+
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
@@ -32,6 +35,7 @@ import org.springframework.security.oauth2.provider.expression.OAuth2MethodSecur
  * Resource service configuration file.<br>
  * Protects resources with access token obtained at the authorization server.
  */
+@NoArgsConstructor
 @Configuration
 @Profile("secure")
 @EnableWebSecurity
@@ -52,7 +56,8 @@ public class SecurityConfig extends ResourceServerConfigurerAdapter {
       "#create == false or #oauth2.hasScope('" + AUTHORIZATION_SCOPE + "')";
 
   @Override
-  public void configure(HttpSecurity http) throws Exception {
+  @SneakyThrows
+  public void configure(HttpSecurity http) {
     http
         .csrf().disable()
         .authorizeRequests()

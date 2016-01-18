@@ -19,6 +19,8 @@ package org.icgc.dcc.id.server.config;
 
 import javax.sql.DataSource;
 
+import lombok.NoArgsConstructor;
+
 import org.icgc.dcc.id.server.repository.DonorRepository;
 import org.icgc.dcc.id.server.repository.FileRepository;
 import org.icgc.dcc.id.server.repository.MutationRepository;
@@ -33,6 +35,7 @@ import org.springframework.context.annotation.Configuration;
 /**
  * Data access layer configuration.
  */
+@NoArgsConstructor
 @Configuration
 public class RepositoryConfig {
 

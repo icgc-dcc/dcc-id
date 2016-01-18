@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.id.server.oauth;
 
+import lombok.NoArgsConstructor;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.retry.support.RetryTemplate;
@@ -25,6 +27,7 @@ import org.springframework.security.oauth2.common.exceptions.InvalidTokenExcepti
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.token.RemoteTokenServices;
 
+@NoArgsConstructor
 public class RetryTokenServices extends RemoteTokenServices {
 
   @Autowired
