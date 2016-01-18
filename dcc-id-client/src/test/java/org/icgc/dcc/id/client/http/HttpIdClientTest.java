@@ -19,7 +19,7 @@ import static org.icgc.dcc.id.core.Prefixes.SPECIMEN_ID_PREFIX;
 import lombok.Cleanup;
 import lombok.val;
 
-import org.icgc.dcc.id.client.http.HttpIdClient.Config;
+import org.icgc.dcc.id.client.http.webclient.WebClientConfig;
 import org.icgc.dcc.id.core.ExhaustedRetryException;
 import org.icgc.dcc.id.core.IdentifierException;
 import org.icgc.dcc.id.util.Ids;
@@ -178,8 +178,8 @@ public class HttpIdClientTest {
     client.getDonorId("s2", "p2");
   }
 
-  private static Config createClientConfig(int maxRetries) {
-    return Config.builder()
+  private static WebClientConfig createClientConfig(int maxRetries) {
+    return WebClientConfig.builder()
         .serviceUrl("http://localhost:" + SERVER_PORT)
         .release("ICGC19")
         .requestLoggingEnabled(true)

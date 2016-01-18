@@ -26,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.id.client.core.IdClient;
 import org.icgc.dcc.id.client.core.IdClientFactory;
+import org.icgc.dcc.id.client.http.webclient.WebClientConfig;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -138,7 +139,7 @@ public class HttpIdClientIntegrationTest {
   @Test
   public void testClient() throws Exception {
     @Cleanup
-    val client = new HttpIdClient(HttpIdClient.Config.builder()
+    val client = new HttpIdClient(WebClientConfig.builder()
         .release("1")
         .serviceUrl("https://localhost:8443")
         .authToken(System.getProperty("authToken"))

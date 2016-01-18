@@ -24,7 +24,7 @@ import java.io.Serializable;
 import lombok.NonNull;
 
 import org.icgc.dcc.id.client.http.HttpIdClient;
-import org.icgc.dcc.id.client.http.HttpIdClient.Config;
+import org.icgc.dcc.id.client.http.webclient.WebClientConfig;
 import org.icgc.dcc.id.client.util.HashIdClient;
 
 public class IdClientFactory implements Serializable {
@@ -35,14 +35,14 @@ public class IdClientFactory implements Serializable {
   @NonNull
   private final String idClassName;
   @NonNull
-  private final Config config;
+  private final WebClientConfig config;
 
   /**
    * Creates {@link HashIdClient}
    */
   public IdClientFactory(@NonNull String serviceUri, @NonNull String releaseName) {
     this.idClassName = HASH_ID_CLIENT_CLASSNAME;
-    this.config = Config.builder()
+    this.config = WebClientConfig.builder()
         .serviceUrl(serviceUri)
         .release(releaseName)
         .build();
@@ -53,7 +53,7 @@ public class IdClientFactory implements Serializable {
    */
   public IdClientFactory(@NonNull String serviceUri, @NonNull String releaseName, String authToken) {
     this.idClassName = HTTP_ID_CLIENT_CLASSNAME;
-    this.config = Config.builder()
+    this.config = WebClientConfig.builder()
         .serviceUrl(serviceUri)
         .release(releaseName)
         .authToken(authToken)
@@ -63,14 +63,14 @@ public class IdClientFactory implements Serializable {
   public IdClientFactory(@NonNull String idClassName, @NonNull String serviceUri, @NonNull String releaseName,
       String authToken) {
     this.idClassName = idClassName;
-    this.config = Config.builder()
+    this.config = WebClientConfig.builder()
         .serviceUrl(serviceUri)
         .release(releaseName)
         .authToken(authToken)
         .build();
   }
 
-  public IdClientFactory(@NonNull String idClassName, @NonNull Config config) {
+  public IdClientFactory(@NonNull String idClassName, @NonNull WebClientConfig config) {
     this.idClassName = idClassName;
     this.config = config;
   }
