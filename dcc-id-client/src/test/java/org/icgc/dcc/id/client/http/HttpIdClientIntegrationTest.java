@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2016 The Ontario Institute for Cancer Research. All rights reserved.
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -26,12 +26,18 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.id.client.core.IdClient;
 import org.icgc.dcc.id.client.core.IdClientFactory;
+import org.icgc.dcc.id.client.http.webclient.WebClientConfig;
 import org.junit.Ignore;
 import org.junit.Test;
 
 @Slf4j
 @Ignore
 public class HttpIdClientIntegrationTest {
+
+  private static final String ID_SERVER_URL = "https://<host>";
+  private static final String RELEASE_NAME = "<release_name>";
+  private static final String PROJECT_ID = "<project_name>";
+  private static final String AUTH_TOKEN = "<auth_token>";
 
   private static final List<String> DONOR_IDS = Arrays.asList(
       "4174884",
@@ -133,12 +139,10 @@ public class HttpIdClientIntegrationTest {
       "4109956"
       );
 
-  private static final String PROJECT_ID = "***REMOVED***";
-
   @Test
   public void testClient() throws Exception {
     @Cleanup
-    val client = new HttpIdClient(HttpIdClient.Config.builder()
+    val client = new HttpIdClient(WebClientConfig.builder()
         .release("1")
         .serviceUrl("https://localhost:8443")
         .authToken(System.getProperty("authToken"))
@@ -154,9 +158,9 @@ public class HttpIdClientIntegrationTest {
 
   @Test
   public void testClientPerformance() {
-    val url = "***REMOVED***";
-    val release = "ICGC19";
-    val authToken = "zzz";
+    val url = ID_SERVER_URL;
+    val release = RELEASE_NAME;
+    val authToken = AUTH_TOKEN;
     val client = new IdClientFactory(url, release, authToken).create();
 
     try {

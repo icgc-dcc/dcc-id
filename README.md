@@ -1,7 +1,7 @@
 ICGC DCC - ID
 ===
 
-ID system for ICGC projects
+The ID project is used by [DCC ETL](https://github.com/icgc-dcc/dcc-etl) project to obfuscate sensitive clinical data.
 
 Modules
 ---
@@ -20,3 +20,10 @@ From the command line:
 ```bash
 mvn clean package
 ```
+
+Copyright and license
+---
+
+ - [License](LICENSE.md)
+
+

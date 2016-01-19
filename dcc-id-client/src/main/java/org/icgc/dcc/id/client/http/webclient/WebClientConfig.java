@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 The Ontario Institute for Cancer Research. All rights reserved.
+ * Copyright (c) 2016 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,22 +15,37 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.id.server.controller;
+package org.icgc.dcc.id.client.http.webclient;
 
-import static org.springframework.web.bind.annotation.RequestMethod.GET;
+import java.io.Serializable;
 
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import lombok.Builder;
+import lombok.Value;
+import lombok.val;
 
-/**
- * For system monitoring purposes. Not used by the application proper.
- */
-@RestController
-public class HealthCheckController {
+@Value
+@Builder
+public class WebClientConfig implements Serializable {
 
-  @RequestMapping(value = "/health", method = GET)
-  public String healthCheck() {
-    return "OK";
+  String serviceUrl;
+  String release;
+  String authToken;
+
+  int maxRetries;
+  int waitBeforeRetrySeconds;
+  float retryMultiplier;
+  boolean requestLoggingEnabled;
+  boolean strictSSLCertificates;
+
+  public static WebClientConfigBuilder builder() {
+    val builder = new WebClientConfigBuilder();
+    builder.requestLoggingEnabled(false);
+    builder.maxRetries(10);
+    builder.waitBeforeRetrySeconds(3);
+    builder.retryMultiplier(1.5f);
+    builder.strictSSLCertificates(true);
+
+    return builder;
   }
 
 }

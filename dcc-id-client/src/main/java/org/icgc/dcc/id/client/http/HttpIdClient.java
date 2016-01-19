@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2016 The Ontario Institute for Cancer Research. All rights reserved.
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -19,7 +19,13 @@ package org.icgc.dcc.id.client.http;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Strings.isNullOrEmpty;
-import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import static javax.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
+import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
+import static org.icgc.dcc.id.client.http.RetryContext.waitBeforeRetry;
+import static org.icgc.dcc.id.client.http.webclient.WebClientFactory.createClient;
 import static org.icgc.dcc.id.core.Prefixes.DONOR_ID_PREFIX;
 import static org.icgc.dcc.id.core.Prefixes.FILE_ID_PREFIX;
 import static org.icgc.dcc.id.core.Prefixes.MUTATION_ID_PREFIX;
@@ -28,41 +34,24 @@ import static org.icgc.dcc.id.core.Prefixes.SPECIMEN_ID_PREFIX;
 import static org.icgc.dcc.id.util.Ids.validateId;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.Optional;
 
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-
-import lombok.Builder;
 import lombok.NonNull;
-import lombok.SneakyThrows;
-import lombok.Value;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.httpclient.ConnectTimeoutException;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.SimpleHttpConnectionManager;
-import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
-import org.icgc.dcc.common.core.security.DumbX509TrustManager;
 import org.icgc.dcc.id.client.core.IdClient;
+import org.icgc.dcc.id.client.http.webclient.WebClientConfig;
 import org.icgc.dcc.id.core.ExhaustedRetryException;
 import org.icgc.dcc.id.core.IdentifierException;
 
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientHandlerException;
-import com.sun.jersey.api.client.ClientRequest;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.api.client.filter.ClientFilter;
-import com.sun.jersey.api.client.filter.LoggingFilter;
-import com.sun.jersey.api.json.JSONConfiguration;
-import com.sun.jersey.client.apache.ApacheHttpClient;
-import com.sun.jersey.client.apache.ApacheHttpClientHandler;
-import com.sun.jersey.client.apache.config.DefaultApacheHttpClientConfig;
 
 @Slf4j
 public class HttpIdClient implements IdClient {
@@ -82,9 +71,9 @@ public class HttpIdClient implements IdClient {
   private final Client client;
   private final WebResource resource;
   private final String release;
-  private final Config clientConfig;
+  private final WebClientConfig clientConfig;
 
-  public HttpIdClient(@NonNull Config config) {
+  public HttpIdClient(@NonNull WebClientConfig config) {
     this.client = createClient(config);
     this.release = config.getRelease();
     this.resource = client.resource(config.getServiceUrl());
@@ -95,7 +84,7 @@ public class HttpIdClient implements IdClient {
    * Required for reflection in Loader
    */
   public HttpIdClient(@NonNull String serviceUri, String release, String authToken) {
-    this(Config.builder()
+    this(WebClientConfig.builder()
         .serviceUrl(serviceUri)
         .release(release)
         .authToken(authToken)
@@ -108,8 +97,7 @@ public class HttpIdClient implements IdClient {
   }
 
   @Override
-  @NonNull
-  public String createDonorId(String submittedDonorId, String submittedProjectId) {
+  public String createDonorId(@NonNull String submittedDonorId, @NonNull String submittedProjectId) {
     val donorId = getDonorId(submittedDonorId, submittedProjectId, true).get();
     checkState(!isNullOrEmpty(donorId), "Failed to create donor id. submittedDonorId: '%s', submittedProjectId: '%s'",
         submittedDonorId, submittedProjectId);
@@ -117,8 +105,7 @@ public class HttpIdClient implements IdClient {
     return donorId;
   }
 
-  private Optional<String> getDonorId(@NonNull String submittedDonorId, @NonNull String submittedProjectId,
-      boolean create) {
+  private Optional<String> getDonorId(String submittedDonorId, String submittedProjectId, boolean create) {
     val request = resource
         .path(DONOR_ID_PATH)
         .queryParam("submittedDonorId", submittedDonorId)
@@ -190,15 +177,15 @@ public class HttpIdClient implements IdClient {
 
   @Override
   public Optional<String> getMutationId(@NonNull String chromosome, @NonNull String chromosomeStart,
-      @NonNull String chromosomeEnd,
-      @NonNull String mutation, @NonNull String mutationType, @NonNull String assemblyVersion) {
+      @NonNull String chromosomeEnd, @NonNull String mutation, @NonNull String mutationType,
+      @NonNull String assemblyVersion) {
     return getMutationId(chromosome, chromosomeStart, chromosomeEnd, mutation, mutationType, assemblyVersion, false);
   }
 
   @Override
   public String createMutationId(@NonNull String chromosome, @NonNull String chromosomeStart,
-      @NonNull String chromosomeEnd, @NonNull String mutation,
-      @NonNull String mutationType, @NonNull String assemblyVersion) {
+      @NonNull String chromosomeEnd, @NonNull String mutation, @NonNull String mutationType,
+      @NonNull String assemblyVersion) {
     val mutationId = getMutationId(chromosome, chromosomeStart, chromosomeEnd, mutation, mutationType, assemblyVersion,
         true).get();
     checkState(!isNullOrEmpty(mutationId), "Failed to create mutation id. chromosome: '%s', chromosomeStart: '%s', "
@@ -225,6 +212,13 @@ public class HttpIdClient implements IdClient {
     validateId(id, MUTATION_ID_PREFIX);
 
     return id;
+  }
+
+  @Override
+  public void close() throws IOException {
+    log.info("Destroying client...");
+    client.destroy();
+    log.info("Client destroyed");
   }
 
   @Override
@@ -260,24 +254,17 @@ public class HttpIdClient implements IdClient {
     return getResponse(request, RetryContext.create(clientConfig));
   }
 
-  private Optional<String> getResponse(WebResource request, RetryContext retryContext) {
+  private static Optional<String> getResponse(WebResource request, RetryContext retryContext) {
     try {
       val response = request.get(ClientResponse.class);
-      if (response.getStatus() == 401 || response.getStatus() == 403 || response.getStatus() == 500) {
-        throw new IdentifierException(response.getEntity(String.class));
-      }
+      verifyNonRetriableErrors(response);
 
-      if (response.getStatus() == 404) {
+      if (response.getStatus() == NOT_FOUND.getStatusCode()) {
         return Optional.empty();
       }
 
-      if (response.getStatus() == 503) {
-        if (retryContext.isRetry()) {
-          log.warn("Could not get {}", request);
-          return getResponse(request, waitBeforeRetry(retryContext));
-        } else {
-          throw new ExhaustedRetryException();
-        }
+      if (response.getStatus() == SERVICE_UNAVAILABLE.getStatusCode()) {
+        return retryFailedRequest(request, retryContext);
       }
 
       val entity = response.getEntity(String.class);
@@ -301,133 +288,29 @@ public class HttpIdClient implements IdClient {
     }
   }
 
+  private static Optional<String> retryFailedRequest(WebResource request, RetryContext retryContext) {
+    if (retryContext.isRetry() == false) {
+      throw new ExhaustedRetryException();
+    }
+
+    log.warn("Could not get {}", request);
+    return getResponse(request, waitBeforeRetry(retryContext));
+  }
+
   private static boolean isRetryException(Throwable cause) {
     return cause instanceof SocketTimeoutException || cause instanceof ConnectTimeoutException
         || cause instanceof SocketException;
   }
 
-  @SneakyThrows
-  private RetryContext waitBeforeRetry(RetryContext retryContext) {
-    log.info("Service Unavailable. Waiting for {} seconds before retry...", retryContext.getSleepSeconds());
-    log.info("{}", retryContext);
-    Thread.sleep(retryContext.sleepSeconds * 1000);
-
-    return RetryContext.next(retryContext);
-  }
-
-  @SneakyThrows
-  private static Client createClient(Config config) {
-    val connectionManager = new SimpleHttpConnectionManager();
-
-    connectionManager.getParams().setConnectionTimeout(30000);
-    connectionManager.getParams().setSoTimeout(60000);
-    connectionManager.getParams().setDefaultMaxConnectionsPerHost(10);
-    connectionManager.getParams().setStaleCheckingEnabled(false);
-
-    val httpClient = new HttpClient(connectionManager);
-    val clientHandler = new ApacheHttpClientHandler(httpClient);
-    val root = new ApacheHttpClient(clientHandler);
-    val clientConfig = new DefaultApacheHttpClientConfig();
-
-    if (!config.isStrictSSLCertificates()) {
-      log.debug("Setting up SSL context");
-      val context = SSLContext.getInstance("TLS");
-      context.init(null, new TrustManager[] { new DumbX509TrustManager() }, null);
-      SSLContext.setDefault(context);
+  /**
+   * @throws IdentifierException
+   */
+  private static void verifyNonRetriableErrors(ClientResponse response) {
+    if (response.getStatus() == UNAUTHORIZED.getStatusCode()
+        || response.getStatus() == FORBIDDEN.getStatusCode()
+        || response.getStatus() == INTERNAL_SERVER_ERROR.getStatusCode()) {
+      throw new IdentifierException(response.getEntity(String.class));
     }
-
-    clientConfig.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
-    clientConfig.getClasses().add(JacksonJsonProvider.class);
-
-    val client = new Client(root, clientConfig);
-
-    if (config.getAuthToken() != null) {
-      client.addFilter(oauth2Filter(config));
-    }
-
-    if (config.isRequestLoggingEnabled()) {
-      client.addFilter(new LoggingFilter());
-    }
-
-    return client;
-  }
-
-  private static ClientFilter oauth2Filter(Config config) {
-    val value = "Bearer " + config.getAuthToken();
-    return new ClientFilter() {
-
-      @Override
-      public ClientResponse handle(ClientRequest request) throws ClientHandlerException {
-        val headers = request.getHeaders();
-        headers.putSingle(AUTHORIZATION, value);
-
-        return getNext().handle(request);
-      }
-
-    };
-  }
-
-  @Override
-  public void close() throws IOException {
-    log.info("Destroying client...");
-    client.destroy();
-    log.info("Client destroyed");
-  }
-
-  @Value
-  @Builder
-  public static class Config implements Serializable {
-
-    String serviceUrl;
-    String release;
-    String authToken;
-
-    int maxRetries;
-    int waitBeforeRetrySeconds;
-    float retryMultiplier;
-    boolean requestLoggingEnabled;
-    boolean strictSSLCertificates;
-
-    public static ConfigBuilder builder() {
-      val builder = new ConfigBuilder();
-      builder.requestLoggingEnabled(false);
-      builder.maxRetries(10);
-      builder.waitBeforeRetrySeconds(3);
-      builder.retryMultiplier(1.5f);
-      builder.strictSSLCertificates(true);
-
-      return builder;
-    }
-
-  }
-
-  @Value
-  @Builder
-  private final static class RetryContext {
-
-    int attempts;
-    int sleepSeconds;
-    float multiplier;
-    boolean retry;
-
-    public static RetryContext create(Config clientConfig) {
-      return RetryContext.builder()
-          .attempts(clientConfig.getMaxRetries())
-          .sleepSeconds(clientConfig.getWaitBeforeRetrySeconds())
-          .multiplier(clientConfig.getRetryMultiplier())
-          .retry(clientConfig.getMaxRetries() > 0)
-          .build();
-    }
-
-    public static RetryContext next(RetryContext previousContext) {
-      return RetryContext.builder()
-          .retry(previousContext.attempts > 1)
-          .attempts(previousContext.attempts - 1)
-          .sleepSeconds((int) (previousContext.sleepSeconds * previousContext.multiplier))
-          .multiplier(previousContext.multiplier)
-          .build();
-    }
-
   }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 The Ontario Institute for Cancer Research. All rights reserved.
+ * Copyright (c) 2016 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,22 +15,50 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.id.server.controller;
+package org.icgc.dcc.id.client.http;
 
-import static org.springframework.web.bind.annotation.RequestMethod.GET;
+import org.icgc.dcc.id.client.http.webclient.WebClientConfig;
 
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import lombok.Builder;
+import lombok.SneakyThrows;
+import lombok.Value;
+import lombok.extern.slf4j.Slf4j;
 
-/**
- * For system monitoring purposes. Not used by the application proper.
- */
-@RestController
-public class HealthCheckController {
+@Slf4j
+@Value
+@Builder
+public final class RetryContext {
 
-  @RequestMapping(value = "/health", method = GET)
-  public String healthCheck() {
-    return "OK";
+  int attempts;
+  int sleepSeconds;
+  float multiplier;
+  boolean retry;
+
+  public static RetryContext create(WebClientConfig clientConfig) {
+    return RetryContext.builder()
+        .attempts(clientConfig.getMaxRetries())
+        .sleepSeconds(clientConfig.getWaitBeforeRetrySeconds())
+        .multiplier(clientConfig.getRetryMultiplier())
+        .retry(clientConfig.getMaxRetries() > 0)
+        .build();
+  }
+
+  public static RetryContext next(RetryContext previousContext) {
+    return RetryContext.builder()
+        .retry(previousContext.attempts > 1)
+        .attempts(previousContext.attempts - 1)
+        .sleepSeconds((int) (previousContext.sleepSeconds * previousContext.multiplier))
+        .multiplier(previousContext.multiplier)
+        .build();
+  }
+
+  @SneakyThrows
+  public static RetryContext waitBeforeRetry(RetryContext retryContext) {
+    log.info("Service Unavailable. Waiting for {} seconds before retry...", retryContext.getSleepSeconds());
+    log.info("{}", retryContext);
+    Thread.sleep(retryContext.getSleepSeconds() * 1000);
+
+    return next(retryContext);
   }
 
 }

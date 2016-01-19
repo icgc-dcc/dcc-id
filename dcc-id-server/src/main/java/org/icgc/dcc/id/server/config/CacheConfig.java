@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2016 The Ontario Institute for Cancer Research. All rights reserved.
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -117,8 +117,6 @@ public class CacheConfig extends CachingConfigurerSupport {
   private static CacheConfiguration createMemoryCache(String name, long maxBytesHeap) {
     val cache = new CacheConfiguration();
     cache.setName(name);
-    // cache.setMaxEntriesLocalDisk(0); // Unlimited
-    // cache.setMaxEntriesLocalHeap(0); // Unlimited
     cache.setMaxBytesLocalHeap(maxBytesHeap);
     cache.overflowToOffHeap(false);
     cache.setEternal(true); // Never expire

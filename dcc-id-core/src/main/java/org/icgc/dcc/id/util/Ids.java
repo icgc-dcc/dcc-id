@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2016 The Ontario Institute for Cancer Research. All rights reserved.
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -18,6 +18,7 @@
 package org.icgc.dcc.id.util;
 
 import static java.lang.String.format;
+import static lombok.AccessLevel.PRIVATE;
 
 import java.util.Map;
 import java.util.Map.Entry;
@@ -25,6 +26,7 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.val;
 
 import org.icgc.dcc.id.core.IdentifierException;
@@ -33,8 +35,8 @@ import org.icgc.dcc.id.core.Prefixes;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
-@NoArgsConstructor
-public final class Ids {
+@NoArgsConstructor(access = PRIVATE)
+public final class Ids { // NOPMD
 
   private static final Map<String, Pattern> PREFIX_PATTERN = ImmutableMap.<String, Pattern> builder()
       .put(compilePattern(Prefixes.DONOR_ID_PREFIX))
@@ -45,9 +47,9 @@ public final class Ids {
       .put(compilePattern(Prefixes.SPECIMEN_ID_PREFIX))
       .build();
 
-  public static void validateId(Optional<String> idOptional, String prefix) {
+  public static void validateId(@NonNull Optional<String> idOptional, @NonNull String prefix) {
     if (idOptional.isPresent()) {
-      val id = idOptional.get();
+      val id = idOptional.get(); // NOPMD
       val pattern = PREFIX_PATTERN.get(prefix);
       if (!pattern.matcher(id).matches()) {
         throw new IdentifierException(format("ID '%s' does not match pattern %s", id, pattern));
@@ -55,7 +57,7 @@ public final class Ids {
     }
   }
 
-  public static String formatId(String prefix, Long id) {
+  public static String formatId(@NonNull String prefix, @NonNull Long id) { // NOPMD
     return format("%s%s", prefix, id);
   }
 
