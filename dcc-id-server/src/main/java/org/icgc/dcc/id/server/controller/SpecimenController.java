@@ -19,7 +19,11 @@ package org.icgc.dcc.id.server.controller;
 import static org.icgc.dcc.id.server.config.SecurityConfig.AUTHORIZATION_EXPRESSION;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
+import java.io.IOException;
+import java.io.OutputStream;
+
 import org.icgc.dcc.id.server.repository.SpecimenRepository;
+import org.icgc.dcc.id.server.service.ExportService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -32,7 +36,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/specimen")
-@RequiredArgsConstructor(onConstructor = @__(@Autowired) )
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class SpecimenController {
 
   /**
@@ -40,6 +44,8 @@ public class SpecimenController {
    */
   @NonNull
   private final SpecimenRepository repository;
+  @NonNull
+  private final ExportService exportService;
 
   @PreAuthorize(AUTHORIZATION_EXPRESSION)
   @Cacheable(value = "specimenIds", key = "{ #submittedSpecimenId, #submittedProjectId }")
@@ -52,6 +58,11 @@ public class SpecimenController {
       @RequestParam(value = "release", defaultValue = "unknown") String release,
       @RequestParam(value = "create", defaultValue = "false") boolean create) {
     return repository.findId(create, submittedSpecimenId, submittedProjectId, release);
+  }
+
+  @RequestMapping(value = "/export", method = GET, produces = "text/tsv")
+  public void export(OutputStream out) throws IOException {
+    exportService.exportSpecimenIds(out);
   }
 
 }

@@ -19,7 +19,11 @@ package org.icgc.dcc.id.server.controller;
 import static org.icgc.dcc.id.server.config.SecurityConfig.AUTHORIZATION_EXPRESSION;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
+import java.io.IOException;
+import java.io.OutputStream;
+
 import org.icgc.dcc.id.server.repository.DonorRepository;
+import org.icgc.dcc.id.server.service.ExportService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -32,7 +36,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/donor")
-@RequiredArgsConstructor(onConstructor = @__(@Autowired) )
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class DonorController {
 
   /**
@@ -40,6 +44,8 @@ public class DonorController {
    */
   @NonNull
   private final DonorRepository repository;
+  @NonNull
+  private final ExportService exportService;
 
   @PreAuthorize(AUTHORIZATION_EXPRESSION)
   @Cacheable(value = "donorIds", key = "{ #submittedDonorId, #submittedProjectId }")
@@ -52,6 +58,11 @@ public class DonorController {
       @RequestParam(value = "release", defaultValue = "unknown") String release,
       @RequestParam(value = "create", defaultValue = "false") boolean create) {
     return repository.findId(create, submittedDonorId, submittedProjectId, release);
+  }
+
+  @RequestMapping(value = "/export", method = GET, produces = "text/tsv")
+  public void export(OutputStream out) throws IOException {
+    exportService.exportDonorIds(out);
   }
 
 }

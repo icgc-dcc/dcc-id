@@ -19,7 +19,11 @@ package org.icgc.dcc.id.server.controller;
 import static org.icgc.dcc.id.server.config.SecurityConfig.AUTHORIZATION_EXPRESSION;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
+import java.io.IOException;
+import java.io.OutputStream;
+
 import org.icgc.dcc.id.server.repository.MutationRepository;
+import org.icgc.dcc.id.server.service.ExportService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -32,7 +36,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/mutation")
-@RequiredArgsConstructor(onConstructor = @__(@Autowired) )
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class MutationController {
 
   /**
@@ -40,6 +44,8 @@ public class MutationController {
    */
   @NonNull
   private final MutationRepository repository;
+  @NonNull
+  private final ExportService exportService;
 
   @PreAuthorize(AUTHORIZATION_EXPRESSION)
   @Cacheable(value = "mutationIds", key = "{ #chromosome, #chromosomeStart, #chromosomeEnd, #mutation, #mutationType, #assemblyVersion }")
@@ -57,6 +63,11 @@ public class MutationController {
       @RequestParam(value = "create", defaultValue = "false") boolean create) {
     return repository.findId(create, chromosome, chromosomeStart, chromosomeEnd, mutationType, mutation,
         assemblyVersion, release);
+  }
+
+  @RequestMapping(value = "/export", method = GET, produces = "text/tsv")
+  public void export(OutputStream out) throws IOException {
+    exportService.exportMutationIds(out);
   }
 
 }

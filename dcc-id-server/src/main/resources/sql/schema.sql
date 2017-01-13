@@ -14,11 +14,7 @@
 -- IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 -- ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-/*
- * Copyright (c) 2012-2013 The Ontario Institute for Cancer Research. All rights reserved.
- */
-
-/* Script for setting up the dcc-indentifer schema using PostgreSQL 9.2.4 */
+--  Script for setting up the dcc-id schema using PostgreSQL 9.2.4 */
 
 -- CREATE DATABASE dcc_identifier;
 -- CREATE USER dcc WITH PASSWORD 'dcc';
