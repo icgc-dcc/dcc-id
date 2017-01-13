@@ -73,7 +73,6 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
     <dependency>
       <groupId>org.jdbi</groupId>
       <artifactId>jdbi</artifactId>
-      <version>${jdbi.version}</version><!--$NO-MVN-MAN-VER$ -->
     </dependency>
     <dependency>
       <groupId>org.postgresql</groupId>
@@ -84,7 +83,6 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
     <dependency>
       <groupId>net.sf.ehcache</groupId>
       <artifactId>ehcache</artifactId>
-      <version>2.10.0</version>
     </dependency>
 
     <!-- Utilities -->
@@ -122,7 +120,6 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
-        <version>${spring-maven-plugin.version}</version>
         <executions>
           <execution>
             <goals>
@@ -157,8 +154,8 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
     <main.class>org.icgc.dcc.id.server.ServerMain</main.class>
     <start-class>${main.class}</start-class>
 
-    <!-- Versions - JDBI -->
-    <jdbi.version>2.63.1</jdbi.version>
+    <!-- Versions - Utilities -->
+    <logback.version>1.1.7</logback.version>
   </properties>
 
 </project>

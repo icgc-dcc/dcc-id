@@ -20,7 +20,8 @@ import static org.icgc.dcc.id.server.config.SecurityConfig.AUTHORIZATION_EXPRESS
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
 import java.io.IOException;
-import java.io.OutputStream;
+
+import javax.servlet.http.HttpServletResponse;
 
 import org.icgc.dcc.id.server.repository.ProjectRepository;
 import org.icgc.dcc.id.server.service.ExportService;
@@ -59,9 +60,10 @@ public class ProjectController {
     return repository.findId(create, submittedProjectId, release);
   }
 
-  @RequestMapping(value = "/export", method = GET, produces = "text/tsv")
-  public void export(OutputStream out) throws IOException {
-    exportService.exportProjectIds(out);
+  @RequestMapping(value = "/export", method = GET)
+  public void export(HttpServletResponse response) throws IOException {
+    response.setContentType("text/tsv");
+    exportService.exportProjectIds(response.getOutputStream());
   }
 
 }

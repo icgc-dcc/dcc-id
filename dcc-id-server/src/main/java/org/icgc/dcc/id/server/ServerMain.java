@@ -1,5 +1,4 @@
 /*
-
  * Copyright (c) 2016 The Ontario Institute for Cancer Research. All rights reserved.
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
@@ -18,15 +17,12 @@
  */
 package org.icgc.dcc.id.server;
 
-import lombok.NoArgsConstructor;
-
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.actuate.autoconfigure.ManagementSecurityAutoConfiguration;
+import org.springframework.boot.actuate.autoconfigure.ManagementWebSecurityAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.SecurityAutoConfiguration;
 
-@NoArgsConstructor
-@SpringBootApplication(exclude = { SecurityAutoConfiguration.class, ManagementSecurityAutoConfiguration.class })
+@SpringBootApplication(exclude = { SecurityAutoConfiguration.class, ManagementWebSecurityAutoConfiguration.class })
 public class ServerMain {
 
   public static void main(String... args) {

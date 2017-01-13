@@ -29,6 +29,9 @@ spring:
 # Server
 server:
   port: 8443
+  compression:
+    enabled: true
+    mime-types: text/tsv
   tomcat:
     max-threads: 50
 

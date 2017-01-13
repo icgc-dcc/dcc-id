@@ -21,7 +21,7 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
   <parent>
     <groupId>org.icgc.dcc</groupId>
     <artifactId>dcc-parent</artifactId>
-    <version>31</version>
+    <version>33</version>
   </parent>
 
   <artifactId>dcc-id</artifactId>
@@ -42,37 +42,7 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
       <id>dcc-releases</id>
       <url>https://artifacts.oicr.on.ca/artifactory/dcc-release</url>
     </repository>
-
-    <!-- Spring -->
-    <repository>
-      <id>spring-milestones</id>
-      <name>Spring Milestones</name>
-      <url>http://repo.spring.io/milestone</url>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>spring-snapshots</id>
-      <name>Spring Snapshots</name>
-      <url>http://repo.spring.io/snapshot</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
   </repositories>
-
-  <pluginRepositories>
-    <!-- Spring -->
-    <pluginRepository>
-      <id>spring-snapshots</id>
-      <name>Spring Snapshots</name>
-      <url>http://repo.spring.io/snapshot</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </pluginRepository>
-  </pluginRepositories>
 
   <dependencyManagement>
     <dependencies>
@@ -101,11 +71,6 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
             <groupId>org.codehaus.jackson</groupId>
           </exclusion>
         </exclusions>
-      </dependency>
-      <dependency>
-        <groupId>org.springframework.retry</groupId>
-        <artifactId>spring-retry</artifactId>
-        <version>${spring-retry.version}</version>
       </dependency>
 
       <!-- Database -->
@@ -142,13 +107,11 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
 
   <properties>
     <!-- Versions - DCC -->
-    <dcc-common.version>3.8.8.3</dcc-common.version>
+    <dcc-common.version>4.3.10</dcc-common.version>
 
     <!-- Versions - Spring -->
-    <spring-boot.version>1.2.5.RELEASE</spring-boot.version>
+    <spring-boot.version>1.4.1.RELEASE</spring-boot.version>
     <spring-security-oauth2.version>2.0.7.RELEASE</spring-security-oauth2.version>
-    <spring-retry.version>1.1.2.RELEASE</spring-retry.version>
-    <spring-maven-plugin.version>1.2.5.RELEASE</spring-maven-plugin.version>
 
     <!-- Versions - DB -->
     <jdbi.version>2.53</jdbi.version>
