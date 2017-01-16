@@ -153,9 +153,6 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
     <!-- Spring -->
     <main.class>org.icgc.dcc.id.server.ServerMain</main.class>
     <start-class>${main.class}</start-class>
-
-    <!-- Versions - Utilities -->
-    <logback.version>1.1.7</logback.version>
   </properties>
 
 </project>
