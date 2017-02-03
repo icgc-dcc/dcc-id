@@ -17,12 +17,15 @@
  */
 package org.icgc.dcc.id.server.config;
 
-import lombok.NoArgsConstructor;
-import lombok.SneakyThrows;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.method.configuration.GlobalMethodSecurityConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -30,6 +33,9 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
 import org.springframework.security.oauth2.provider.expression.OAuth2MethodSecurityExpressionHandler;
+
+import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
 
 /**
  * Resource service configuration file.<br>
@@ -46,6 +52,7 @@ public class SecurityConfig extends ResourceServerConfigurerAdapter {
    * Scope required for ID creation.
    */
   public static final String AUTHORIZATION_SCOPE = "id.create";
+  public static final String PROJECT_ID_SCOPE_TEMPLATE = "id.%s.create";
 
   /**
    * Expression for ID access.
@@ -53,7 +60,8 @@ public class SecurityConfig extends ResourceServerConfigurerAdapter {
    * Read-only access is always allowed. Creation requires pre-configured scope.
    */
   public static final String AUTHORIZATION_EXPRESSION =
-      "#create == false or #oauth2.hasScope('" + AUTHORIZATION_SCOPE + "')";
+      "#create == false or #oauth2.hasScope('" + AUTHORIZATION_SCOPE + "') " +
+          "or #oauth2.hasScope('" + PROJECT_ID_SCOPE_TEMPLATE + "'.format(#submittedProjectId))";
 
   @Override
   @SneakyThrows
@@ -78,6 +86,13 @@ public class SecurityConfig extends ResourceServerConfigurerAdapter {
       // Enable #oauth expressions
       return new OAuth2MethodSecurityExpressionHandler();
     }
+
+  }
+
+  @Target({ ElementType.METHOD, ElementType.TYPE })
+  @Retention(RetentionPolicy.RUNTIME)
+  @PreAuthorize(AUTHORIZATION_EXPRESSION)
+  public static @interface IdCreatable {
 
   }
 
