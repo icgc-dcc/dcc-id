@@ -17,11 +17,8 @@
  */
 package org.icgc.dcc.id.server.config;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
+import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
@@ -34,8 +31,10 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
 import org.springframework.security.oauth2.provider.expression.OAuth2MethodSecurityExpressionHandler;
 
-import lombok.NoArgsConstructor;
-import lombok.SneakyThrows;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * Resource service configuration file.<br>
@@ -61,7 +60,7 @@ public class SecurityConfig extends ResourceServerConfigurerAdapter {
    */
   public static final String AUTHORIZATION_EXPRESSION =
       "#create == false or #oauth2.hasScope('" + AUTHORIZATION_SCOPE + "') " +
-          "or #oauth2.hasScope('" + PROJECT_ID_SCOPE_TEMPLATE + "'.format(#submittedProjectId))";
+          "or #oauth2.hasScope(T(String).format('" + PROJECT_ID_SCOPE_TEMPLATE + "', #submittedProjectId))";
 
   @Override
   @SneakyThrows
