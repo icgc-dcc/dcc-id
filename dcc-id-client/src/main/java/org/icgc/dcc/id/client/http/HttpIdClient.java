@@ -65,6 +65,13 @@ public class HttpIdClient implements IdClient {
   public final static String MUTATION_ID_PATH = "/mutation/id";
   public final static String FILE_ID_PATH = "/file/id";
 
+  public final static String DONOR_EXPORT_PATH = "/donor/export";
+  public final static String SPECIMEN_EXPORT_PATH = "/specimen/export";
+  public final static String SAMPLE_EXPORT_PATH = "/sample/export";
+  public final static String MUTATION_EXPORT_PATH = "/mutation/export";
+  public final static String FILE_EXPORT_PATH = "/file/export";
+
+
   /**
    * State.
    */
@@ -311,6 +318,31 @@ public class HttpIdClient implements IdClient {
         || response.getStatus() == INTERNAL_SERVER_ERROR.getStatusCode()) {
       throw new IdentifierException(response.getEntity(String.class));
     }
+  }
+
+  private Optional<String> getExportData(String path){
+    return getResponse(resource.path(path));
+  }
+
+  @Override
+  public Optional<String> getAllDonorIds(){
+
+    return getExportData(DONOR_EXPORT_PATH);
+  }
+
+  @Override
+  public Optional<String> getAllSampleIds(){
+    return getExportData(SAMPLE_EXPORT_PATH);
+  }
+
+  @Override
+  public Optional<String> getAllSpecimenIds(){
+    return getExportData(SPECIMEN_EXPORT_PATH);
+  }
+
+  @Override
+  public Optional<String> getAllMutationIds() {
+    return getExportData(MUTATION_EXPORT_PATH);
   }
 
 }
