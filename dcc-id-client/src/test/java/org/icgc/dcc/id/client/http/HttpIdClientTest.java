@@ -33,6 +33,10 @@ import static org.icgc.dcc.id.core.Prefixes.DONOR_ID_PREFIX;
 import static org.icgc.dcc.id.core.Prefixes.MUTATION_ID_PREFIX;
 import static org.icgc.dcc.id.core.Prefixes.SAMPLE_ID_PREFIX;
 import static org.icgc.dcc.id.core.Prefixes.SPECIMEN_ID_PREFIX;
+
+import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Range;
 import lombok.Cleanup;
 import lombok.val;
 
@@ -40,10 +44,14 @@ import org.icgc.dcc.id.client.http.webclient.WebClientConfig;
 import org.icgc.dcc.id.core.ExhaustedRetryException;
 import org.icgc.dcc.id.core.IdentifierException;
 import org.icgc.dcc.id.util.Ids;
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class HttpIdClientTest {
 
@@ -216,6 +224,78 @@ public class HttpIdClientTest {
 
   private static String createId(String prefix) {
     return Ids.formatId(prefix, RESPONSE_ID);
+  }
+
+
+  @Test
+  public void testGetAllDonorIds(){
+    val requestUrl = "/donor/export";
+    configureSuccessfulResponse4ExportEndpoints(requestUrl, "donor");
+
+    val response = client.getAllDonorIds();
+
+    String data = response.get();
+
+    Assert.assertEquals(10, Splitter.on('\n').splitToList(data).size());
+
+  }
+
+  @Test
+  public void testGetAllSampleIds(){
+    val requestUrl = "/sample/export";
+    configureSuccessfulResponse4ExportEndpoints(requestUrl, "sample");
+
+    val response = client.getAllSampleIds();
+
+    String data = response.get();
+
+    Assert.assertEquals(10, Splitter.on('\n').splitToList(data).size());
+
+  }
+
+  @Test
+  public void testGetAllSpecimenIds(){
+    val requestUrl = "/specimen/export";
+    configureSuccessfulResponse4ExportEndpoints(requestUrl, "specimen");
+
+    val response = client.getAllSpecimenIds();
+
+    String data = response.get();
+
+    Assert.assertEquals(10, Splitter.on('\n').splitToList(data).size());
+
+  }
+
+  @Test
+  public void testGetAllMutationIds(){
+    val requestUrl = "/mutation/export";
+    configureSuccessfulResponse4ExportEndpoints(requestUrl, "mutation");
+
+    val response = client.getAllMutationIds();
+
+    String data = response.get();
+
+    Assert.assertEquals(10, Splitter.on('\n').splitToList(data).size());
+
+  }
+
+
+  private static void configureSuccessfulResponse4ExportEndpoints(String requestUrl, String type) {
+    stubFor(
+        get(urlEqualTo(requestUrl)).willReturn(
+            aResponse().withStatus(200).withHeader("Content-Type", "text/plain").withBody(createExportData(type))
+        )
+    );
+  }
+
+
+  private static String createExportData(String type){
+
+    return
+      Joiner.on('\n').join(
+          IntStream.range(0, 10).boxed().map(value -> Joiner.on('\t').join(type + "_id_" + value, "project_" + value)).collect(Collectors.toList())
+      );
+
   }
 
 }
