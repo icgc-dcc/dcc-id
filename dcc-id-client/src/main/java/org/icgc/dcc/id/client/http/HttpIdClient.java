@@ -325,10 +325,7 @@ public class HttpIdClient implements IdClient {
   }
 
   @Override
-  public Optional<String> getAllDonorIds(){
-
-    return getExportData(DONOR_EXPORT_PATH);
-  }
+  public Optional<String> getAllDonorIds() { return getExportData(DONOR_EXPORT_PATH); }
 
   @Override
   public Optional<String> getAllSampleIds(){
