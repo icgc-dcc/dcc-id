@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.id.client.core;
 
+import org.icgc.dcc.id.client.exception.ExportDataNotSupportedException;
 import java.io.Closeable;
 import java.util.Optional;
 
@@ -51,5 +52,30 @@ public interface IdClient extends Closeable {
       String mutation, String mutationType, String assemblyVersion);
 
   String createFileId(String submittedFileId);
+
+
+  /**
+   *  export the whole data from the db table as a string
+   */
+
+  default Optional<String> getAllDonorIds(){
+    throw new ExportDataNotSupportedException("donor");
+  }
+
+  default Optional<String> getAllSampleIds(){
+    throw new ExportDataNotSupportedException("sample");
+  }
+
+  default Optional<String> getAllSpecimenIds(){
+    throw new ExportDataNotSupportedException("specimen");
+  }
+
+  default Optional<String> getAllMutationIds() {
+    throw new ExportDataNotSupportedException("mutation");
+  }
+
+  default Optional<String> getAllFileIds(){
+    throw new ExportDataNotSupportedException("file");
+  }
 
 }
