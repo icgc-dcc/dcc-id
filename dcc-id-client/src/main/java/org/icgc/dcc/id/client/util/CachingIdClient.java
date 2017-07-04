@@ -18,7 +18,10 @@
 package org.icgc.dcc.id.client.util;
 
 import java.util.Optional;
+import java.util.UUID;
 
+import com.google.common.base.Joiner;
+import org.icgc.dcc.common.core.util.UUID5;
 import org.icgc.dcc.id.client.core.IdClient;
 
 import com.google.common.base.Function;
@@ -88,6 +91,16 @@ public class CachingIdClient extends ForwardingIdClient {
   @SneakyThrows
   public Optional<String> getFileId(String submittedFileId) {
     return fileIdCache.get(new Key(submittedFileId, null, false));
+  }
+
+  @Override
+  public Optional<String> getObjectId(String analysisId, String fileName) {
+    return Optional.of(UUID5.fromUTF8(UUID5.getNamespace(), Joiner.on('/').join(analysisId, fileName)).toString());
+  }
+
+  @Override
+  public Optional<String> getAnalysisId() {
+    return Optional.of(UUID.randomUUID().toString());
   }
 
   //
