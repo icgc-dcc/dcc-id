@@ -22,7 +22,9 @@ import static com.google.common.hash.Hashing.md5;
 
 import java.io.IOException;
 import java.util.Optional;
+import java.util.UUID;
 
+import org.icgc.dcc.common.core.util.UUID5;
 import org.icgc.dcc.id.client.core.IdClient;
 import org.icgc.dcc.id.core.Prefixes;
 
@@ -86,6 +88,16 @@ public class HashIdClient implements IdClient {
   @Override
   public Optional<String> getFileId(String submittedFileId) {
     return Optional.of(Prefixes.FILE_ID_PREFIX + generateId(submittedFileId));
+  }
+
+  @Override
+  public Optional<String> getObjectId(String analysisId, String fileName) {
+    return Optional.of(UUID5.fromUTF8(UUID5.getNamespace(), Joiner.on('/').join(analysisId, fileName)).toString());
+  }
+
+  @Override
+  public Optional<String> getAnalysisId() {
+    return Optional.of(UUID.randomUUID().toString());
   }
 
   @Override
