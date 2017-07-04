@@ -64,6 +64,8 @@ public class HttpIdClient implements IdClient {
   public final static String SAMPLE_ID_PATH = "/sample/id";
   public final static String MUTATION_ID_PATH = "/mutation/id";
   public final static String FILE_ID_PATH = "/file/id";
+  public final static String OBJECT_ID_PATH = "/object/id";
+  public final static String ANALYSIS_ID_PATH = "/analysis/id";
 
   public final static String DONOR_EXPORT_PATH = "/donor/export";
   public final static String SPECIMEN_EXPORT_PATH = "/specimen/export";
@@ -251,6 +253,24 @@ public class HttpIdClient implements IdClient {
     validateId(id, FILE_ID_PREFIX);
 
     return id;
+  }
+
+  @Override
+  public Optional<String> getObjectId(@NonNull String analysisId, @NonNull String fileName) {
+    val request = resource
+        .path(OBJECT_ID_PATH)
+        .queryParam("analysisId", analysisId)
+        .queryParam("fileName", fileName);
+
+    return getResponse(request);
+  }
+
+  @Override
+  public Optional<String> getAnalysisId() {
+    val request = resource
+        .path(ANALYSIS_ID_PATH);
+
+    return getResponse(request);
   }
 
   /*

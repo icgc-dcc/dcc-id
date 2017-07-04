@@ -38,6 +38,10 @@ public interface IdClient extends Closeable {
 
   Optional<String> getFileId(String submittedFileId);
 
+  Optional<String> getObjectId(String analysisId, String fileName);
+
+  Optional<String> getAnalysisId();
+
   /**
    * Create if it doesn't exist
    */
@@ -52,7 +56,6 @@ public interface IdClient extends Closeable {
       String mutation, String mutationType, String assemblyVersion);
 
   String createFileId(String submittedFileId);
-
 
   /**
    *  export the whole data from the db table as a string
