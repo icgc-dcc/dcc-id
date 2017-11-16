@@ -28,7 +28,7 @@ spring:
 
 # Server
 server:
-  port: 8443
+  port: 8445
   compression:
     enabled: true
     mime-types: text/tsv
@@ -45,6 +45,7 @@ cache:
     file: 32
     sample: 32
     specimen: 8
+    analysis: 8
 
 # Management endpoints
 management:
