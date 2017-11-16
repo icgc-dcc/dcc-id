@@ -45,7 +45,6 @@ cache:
     file: 32
     sample: 32
     specimen: 8
-    analysis: 8
 
 # Management endpoints
 management:

@@ -57,8 +57,6 @@ public class CacheConfig extends CachingConfigurerSupport {
   private String sampleSize;
   @Value("${cache.size.specimen}")
   private String specimenSize;
-  @Value("${cache.size.analysis}")
-  private String analysisSize;
 
   @Bean(destroyMethod = "shutdown")
   public net.sf.ehcache.CacheManager ehCacheManager() {
@@ -70,7 +68,6 @@ public class CacheConfig extends CachingConfigurerSupport {
     // In-memory caches
     val projectIds = createMemoryCache("projectIds", getCacheSize("1")); // 1M
     val donorIds = createMemoryCache("donorIds", getCacheSize(donorSize));
-    val analysisIds= createMemoryCache("analysisIds", getCacheSize(analysisSize));
     val specimenIds = createMemoryCache("specimenIds", getCacheSize(specimenSize));
     val sampleIds = createMemoryCache("sampleIds", getCacheSize(sampleSize));
     val fileIds = createMemoryCache("fileIds", getCacheSize(fileSize));
@@ -84,7 +81,6 @@ public class CacheConfig extends CachingConfigurerSupport {
     config.addCache(sampleIds);
     config.addCache(fileIds);
     config.addCache(mutationIds);
-    config.addCache(analysisIds);
     config.addDiskStore(new DiskStoreConfiguration().path(cacheDir));
 
     return net.sf.ehcache.CacheManager.newInstance(config);
