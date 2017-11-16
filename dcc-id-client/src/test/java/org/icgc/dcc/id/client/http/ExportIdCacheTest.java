@@ -1,8 +1,13 @@
 package org.icgc.dcc.id.client.http;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.icgc.dcc.common.core.util.Formats.formatCount;
-import static org.icgc.dcc.common.core.util.Formats.formatRate;
+import com.google.common.base.Stopwatch;
+import lombok.Cleanup;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import lombok.val;
+import org.icgc.dcc.id.core.Prefixes;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -10,16 +15,9 @@ import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.util.zip.GZIPInputStream;
 
-import org.icgc.dcc.id.core.Prefixes;
-import org.junit.Ignore;
-import org.junit.Test;
-
-import com.google.common.base.Stopwatch;
-
-import lombok.Cleanup;
-import lombok.SneakyThrows;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.icgc.dcc.common.core.util.Formats.formatCount;
+import static org.icgc.dcc.common.core.util.Formats.formatRate;
 
 @Slf4j
 @Ignore("For development only. This takes a while first time through since it downloads a lot of data")
@@ -41,6 +39,11 @@ public class ExportIdCacheTest {
     val sampleId = cache.getSampleId("THCA-SA", "PTC_279");
     assertThat(sampleId).isEqualTo("SA594536");
     System.out.println(sampleId);
+
+    val submittedAnalysisId = "bbbbdeab-0007-4cd5-a7f4-d10b0d5c09ce";
+    val analysisId = cache.getAnalysisId(submittedAnalysisId);
+    assertThat(analysisId).isEqualTo(submittedAnalysisId);
+    System.out.println(analysisId);
 
     val fileId = cache.getFileId("3779df53-48bc-5340-9cf7-663cb5d48065");
     assertThat(fileId).isEqualTo("FI672813");

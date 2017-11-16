@@ -17,14 +17,33 @@
  */
 package org.icgc.dcc.id.client.http;
 
+import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
+import lombok.Cleanup;
+import lombok.val;
+import org.icgc.dcc.id.client.http.webclient.WebClientConfig;
+import org.icgc.dcc.id.core.ExhaustedRetryException;
+import org.icgc.dcc.id.core.IdentifierException;
+import org.icgc.dcc.id.util.Ids;
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+
+import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
+import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.icgc.dcc.id.client.http.HttpIdClient.ANALYSIS_ID_PATH;
 import static org.icgc.dcc.id.client.http.HttpIdClient.DONOR_ID_PATH;
 import static org.icgc.dcc.id.client.http.HttpIdClient.MUTATION_ID_PATH;
 import static org.icgc.dcc.id.client.http.HttpIdClient.SAMPLE_ID_PATH;
@@ -34,34 +53,37 @@ import static org.icgc.dcc.id.core.Prefixes.MUTATION_ID_PREFIX;
 import static org.icgc.dcc.id.core.Prefixes.SAMPLE_ID_PREFIX;
 import static org.icgc.dcc.id.core.Prefixes.SPECIMEN_ID_PREFIX;
 
-import com.google.common.base.Joiner;
-import com.google.common.base.Splitter;
-import com.google.common.collect.Range;
-import lombok.Cleanup;
-import lombok.val;
-
-import org.icgc.dcc.id.client.http.webclient.WebClientConfig;
-import org.icgc.dcc.id.core.ExhaustedRetryException;
-import org.icgc.dcc.id.core.IdentifierException;
-import org.icgc.dcc.id.util.Ids;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
-
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
 public class HttpIdClientTest {
 
   private static final int SERVER_PORT = 22223;
   private static final Long RESPONSE_ID = 1000L;
+  private static final String SUBMITTED_ANALYSIS_ID = UUID.randomUUID().toString();
 
   @Rule
   public WireMockRule wireMockRule = new WireMockRule(SERVER_PORT);
 
   HttpIdClient client = new HttpIdClient(createClientConfig(3));
+
+
+  @Test
+  public void testGetAnalysisId() {
+    val requestUrl =
+        format("%s?submittedAnalysisId=%s&create=false", ANALYSIS_ID_PATH, SUBMITTED_ANALYSIS_ID);
+    configureSuccessfulAnalysisResponse(requestUrl, SUBMITTED_ANALYSIS_ID);
+
+    val response = client.getAnalysisId(SUBMITTED_ANALYSIS_ID);
+    assertThat(response.get()).isEqualTo(SUBMITTED_ANALYSIS_ID);
+  }
+
+  @Test
+  public void testCreateAnalysisId() {
+    val requestUrl =
+        format("%s?submittedAnalysisId=%s&create=true", ANALYSIS_ID_PATH, SUBMITTED_ANALYSIS_ID );
+    configureSuccessfulAnalysisResponse(requestUrl, SUBMITTED_ANALYSIS_ID);
+
+    val response = client.createAnalysisId(SUBMITTED_ANALYSIS_ID);
+    assertThat(response).isEqualTo(SUBMITTED_ANALYSIS_ID);
+  }
 
   @Test
   public void testGetDonorId() {
@@ -214,6 +236,17 @@ public class HttpIdClientTest {
         .build();
   }
 
+  private static void configureSuccessfulAnalysisResponse(String requestUrl, String expectedId) {
+    val responseModel = aResponse()
+        .withStatus(200)
+        .withHeader("Content-Type", "text/plain");
+
+    if (!isNullOrEmpty(expectedId)){
+      responseModel.withBody(expectedId);
+    }
+    stubFor(get(urlEqualTo(requestUrl))
+        .willReturn(responseModel));
+  }
   private static void configureSuccessfulResponse(String requestUrl, String prefix) {
     stubFor(get(urlEqualTo(requestUrl))
         .willReturn(aResponse()

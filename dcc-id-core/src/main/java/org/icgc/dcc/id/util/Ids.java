@@ -17,23 +17,22 @@
  */
 package org.icgc.dcc.id.util;
 
-import static java.lang.String.format;
-import static lombok.AccessLevel.PRIVATE;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.val;
+import org.icgc.dcc.id.core.IdentifierException;
+import org.icgc.dcc.id.core.Prefixes;
 
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.val;
-
-import org.icgc.dcc.id.core.IdentifierException;
-import org.icgc.dcc.id.core.Prefixes;
-
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
+import static java.lang.String.format;
+import static lombok.AccessLevel.PRIVATE;
 
 @NoArgsConstructor(access = PRIVATE)
 public final class Ids { // NOPMD
@@ -53,6 +52,17 @@ public final class Ids { // NOPMD
       val pattern = PREFIX_PATTERN.get(prefix);
       if (!pattern.matcher(id).matches()) {
         throw new IdentifierException(format("ID '%s' does not match pattern %s", id, pattern));
+      }
+    }
+  }
+
+  public static void validateUuid(@NonNull Optional<String> idOptional){
+    if(idOptional.isPresent()){
+      val id = idOptional.get();
+      try{
+        UUID.fromString(id);
+      } catch (IllegalArgumentException e){
+        throw new IdentifierException(format("ID '%s' does not conform to the string representation of UUID", id ));
       }
     }
   }

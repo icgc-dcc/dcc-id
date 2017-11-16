@@ -17,6 +17,24 @@
  */
 package org.icgc.dcc.id.client.http;
 
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientHandlerException;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.WebResource;
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
+import lombok.val;
+import org.apache.commons.httpclient.ConnectTimeoutException;
+import org.icgc.dcc.id.client.core.IdClient;
+import org.icgc.dcc.id.client.http.webclient.WebClientConfig;
+import org.icgc.dcc.id.core.ExhaustedRetryException;
+import org.icgc.dcc.id.core.IdentifierException;
+
+import java.io.IOException;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
+import java.util.Optional;
+
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
@@ -32,26 +50,7 @@ import static org.icgc.dcc.id.core.Prefixes.MUTATION_ID_PREFIX;
 import static org.icgc.dcc.id.core.Prefixes.SAMPLE_ID_PREFIX;
 import static org.icgc.dcc.id.core.Prefixes.SPECIMEN_ID_PREFIX;
 import static org.icgc.dcc.id.util.Ids.validateId;
-
-import java.io.IOException;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
-import java.util.Optional;
-
-import lombok.NonNull;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
-import org.apache.commons.httpclient.ConnectTimeoutException;
-import org.icgc.dcc.id.client.core.IdClient;
-import org.icgc.dcc.id.client.http.webclient.WebClientConfig;
-import org.icgc.dcc.id.core.ExhaustedRetryException;
-import org.icgc.dcc.id.core.IdentifierException;
-
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientHandlerException;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource;
+import static org.icgc.dcc.id.util.Ids.validateUuid;
 
 @Slf4j
 public class HttpIdClient implements IdClient {
@@ -71,6 +70,7 @@ public class HttpIdClient implements IdClient {
   public final static String SPECIMEN_EXPORT_PATH = "/specimen/export";
   public final static String SAMPLE_EXPORT_PATH = "/sample/export";
   public final static String MUTATION_EXPORT_PATH = "/mutation/export";
+  public final static String ANALYSIS_EXPORT_PATH = "/analysis/export";
   public final static String FILE_EXPORT_PATH = "/file/export";
 
 
@@ -101,6 +101,20 @@ public class HttpIdClient implements IdClient {
   }
 
   @Override
+  public Optional<String> getAnalysisId(@NonNull String submittedAnalysisId) {
+    return getAnalysisId(submittedAnalysisId,  false);
+  }
+
+  @Override
+  public String createAnalysisId(@NonNull String submittedAnalysisId) {
+    val analysisId = getAnalysisId(submittedAnalysisId, true).get();
+    checkState(!isNullOrEmpty(analysisId),
+        "Failed to create analysis id. submittedAnalysisId: '%s'" ,
+        submittedAnalysisId);
+    return analysisId;
+  }
+
+  @Override
   public Optional<String> getDonorId(@NonNull String submittedDonorId, @NonNull String submittedProjectId) {
     return getDonorId(submittedDonorId, submittedProjectId, false);
   }
@@ -125,6 +139,17 @@ public class HttpIdClient implements IdClient {
     val id = getResponse(request);
     validateId(id, DONOR_ID_PREFIX);
 
+    return id;
+  }
+
+  private Optional<String> getAnalysisId(String submittedAnalysisId, boolean create) {
+    val request = resource
+        .path(ANALYSIS_ID_PATH)
+        .queryParam("submittedAnalysisId", submittedAnalysisId)
+        .queryParam("create", String.valueOf(create));
+
+    val id = getResponse(request);
+    validateUuid(id);
     return id;
   }
 
@@ -265,13 +290,6 @@ public class HttpIdClient implements IdClient {
     return getResponse(request);
   }
 
-  @Override
-  public Optional<String> getAnalysisId() {
-    val request = resource
-        .path(ANALYSIS_ID_PATH);
-
-    return getResponse(request);
-  }
 
   /*
    * Helpers
@@ -350,6 +368,11 @@ public class HttpIdClient implements IdClient {
   @Override
   public Optional<String> getAllSampleIds(){
     return getExportData(SAMPLE_EXPORT_PATH);
+  }
+
+  @Override
+  public Optional<String> getAllAnalysisIds(){
+    return getExportData(ANALYSIS_EXPORT_PATH);
   }
 
   @Override

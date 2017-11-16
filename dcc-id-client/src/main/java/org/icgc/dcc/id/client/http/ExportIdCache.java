@@ -17,13 +17,14 @@
  */
 package org.icgc.dcc.id.client.http;
 
-import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.common.core.util.Formats.formatCount;
-import static org.icgc.dcc.common.core.util.Joiners.TAB;
-
-import java.io.File;
-import java.util.Map;
-
+import com.google.common.base.Stopwatch;
+import lombok.Cleanup;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.icgc.dcc.id.client.util.FileMutex;
 import org.icgc.dcc.id.core.Prefixes;
 import org.mapdb.DB;
@@ -31,15 +32,13 @@ import org.mapdb.DBException;
 import org.mapdb.DBMaker;
 import org.mapdb.Serializer;
 
-import com.google.common.base.Stopwatch;
+import java.io.File;
+import java.util.Map;
+import java.util.Set;
 
-import lombok.Cleanup;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
+import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.common.core.util.Formats.formatCount;
+import static org.icgc.dcc.common.core.util.Joiners.TAB;
 
 /**
  * Memory efficient, disk based cache for all entity ids.
@@ -91,6 +90,11 @@ public class ExportIdCache implements AutoCloseable {
   @Getter(lazy = true, value = PRIVATE)
   private final Map<String, Long> fileIds = createEntityMap(getFileDB(), "file");
 
+  @Getter(lazy = true, value = PRIVATE)
+  private final DB analysisDB = loadEntity("analysis");
+  @Getter(lazy = true, value = PRIVATE)
+  private final Set<String> analysisIds = createEntitySet(getAnalysisDB(), "analysis");
+
   private volatile boolean closed;
 
   public ExportIdCache() {
@@ -119,6 +123,10 @@ public class ExportIdCache implements AutoCloseable {
     if (id == null) return null;
 
     return Prefixes.SAMPLE_ID_PREFIX + id;
+  }
+
+  public String getAnalysisId(@NonNull String submittedAnalysisId) {
+    return getAnalysisIds().contains(submittedAnalysisId) ? submittedAnalysisId : null;
   }
 
   public String getMutationId(@NonNull String chromosome, @NonNull String chromosomeStart,
@@ -253,11 +261,18 @@ public class ExportIdCache implements AutoCloseable {
     return new File(dbFile.getParentFile(), dbFile.getName() + ".lock");
   }
 
+  private static Set<String> createEntitySet(DB db, String name) {
+    return db
+        .hashSet(name, Serializer.STRING_ASCII)
+        .createOrOpen();
+  }
+
   private static Map<String, Long> createEntityMap(DB db, String name) {
     return db
         .hashMap(name, Serializer.STRING_ASCII, Serializer.LONG)
         .createOrOpen();
   }
+
 
   private static Long parseId(String line) {
     val idTab = line.indexOf('\t');

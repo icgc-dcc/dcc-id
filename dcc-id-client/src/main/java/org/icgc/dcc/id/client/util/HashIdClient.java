@@ -17,21 +17,20 @@
  */
 package org.icgc.dcc.id.client.util;
 
-import static com.google.common.base.Joiner.on;
-import static com.google.common.hash.Hashing.md5;
+import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
+import com.google.common.hash.HashFunction;
+import lombok.NoArgsConstructor;
+import org.icgc.dcc.common.core.util.UUID5;
+import org.icgc.dcc.id.client.core.IdClient;
+import org.icgc.dcc.id.core.Prefixes;
 
 import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.icgc.dcc.common.core.util.UUID5;
-import org.icgc.dcc.id.client.core.IdClient;
-import org.icgc.dcc.id.core.Prefixes;
-
-import com.google.common.base.Joiner;
-import com.google.common.hash.HashFunction;
-
-import lombok.NoArgsConstructor;
+import static com.google.common.base.Joiner.on;
+import static com.google.common.hash.Hashing.md5;
 
 /**
  * Stateless hash based {@link IdClient} implementation that returns a stable id based on it it's inputs.
@@ -50,6 +49,15 @@ public class HashIdClient implements IdClient {
    */
   public HashIdClient(String serviceUri, String release) {
     // Empty
+  }
+
+  @Override
+  public Optional<String> getAnalysisId(String submittedAnalysisId) {
+    if(Strings.isNullOrEmpty(submittedAnalysisId)){
+      return Optional.of(UUID.randomUUID().toString());
+    } else {
+      return Optional.of(submittedAnalysisId);
+    }
   }
 
   @Override
@@ -96,8 +104,8 @@ public class HashIdClient implements IdClient {
   }
 
   @Override
-  public Optional<String> getAnalysisId() {
-    return Optional.of(UUID.randomUUID().toString());
+  public String createAnalysisId(String submittedAnalysisId) {
+    return getAnalysisId(submittedAnalysisId).get();
   }
 
   @Override

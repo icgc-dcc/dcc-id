@@ -65,6 +65,10 @@ public class ExportService {
     export("file_ids", out);
   }
 
+  public void exportAnalysisIds(OutputStream out) {
+    export("analysis_ids", out);
+  }
+
   @SneakyThrows
   private void export(String tableName, OutputStream out) {
     @Cleanup
