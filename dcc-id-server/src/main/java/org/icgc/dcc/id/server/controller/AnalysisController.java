@@ -18,10 +18,8 @@ package org.icgc.dcc.id.server.controller;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.icgc.dcc.id.server.config.SecurityConfig.IdCreatable;
 import org.icgc.dcc.id.server.service.AnalysisService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -39,10 +37,8 @@ public class AnalysisController {
    */
   @NonNull private final AnalysisService analysisService;
 
-  @IdCreatable
-  @Cacheable(value = "analysisIds", key = "#submitterAnalysisId")
   @RequestMapping(value = "/id", method = GET)
-  public String donorId(
+  public String analysisId(
       // Optional
       @RequestParam(value = "submitterAnalysisId", defaultValue = "") String submitterAnalysisId,
       @RequestParam(value = "create", defaultValue = "true") boolean create) {

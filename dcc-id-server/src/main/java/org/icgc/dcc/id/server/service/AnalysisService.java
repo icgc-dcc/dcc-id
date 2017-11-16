@@ -6,43 +6,51 @@ import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
+import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.lang.String.format;
+import static java.util.Objects.isNull;
 
 @Service
 public class AnalysisService {
 
-  private static final int RETRY_LIMIT = 1000;
+  private static final int RETRY_LIMIT = 100;
 
   @Autowired
-  private AnalysisRepository repository;
+  private AnalysisRepository analysisRepository;
 
   /**
-   * If the submitterAnalysisId is null or empty, an unique submitterAnalysisId is created,
+   * If the analysisId is null or empty, an unique analysisId is created,
    * otherwise, used.
-   * @param create
-   * @param submitterAnalysisId
+   * @param analysisId
    * @return analysisId
    */
-  public String analysisId(boolean create, String submitterAnalysisId){
-    String id = submitterAnalysisId;
+  public String analysisId(boolean create, String analysisId){
+    String id = analysisId;
     if (isNullOrEmpty(id)) {
-      id = createUniqueUuid().toString();
+      checkState(create, "Cannot retrieve an analysisId when create = false and analysisId is null/empty");
+      id = createUniqueId();
     }
-    return repository.findId(create, id);
+    return analysisRepository.findId(create, id);
   }
 
 
-  private UUID createUniqueUuid(){
-    UUID uuid = UUID.randomUUID();
+  private String createUniqueId(){
+    String id = generateRandomUuid();
     int retryCount = 0;
     while (retryCount < RETRY_LIMIT){
-      if (!repository.doesAnalysisIdExist(uuid.toString())){
-        return uuid;
+      boolean doesIdExist = !isNull(analysisRepository.findId(false,id ));
+      if (!doesIdExist){
+        return id;
       }
       retryCount++;
+      id = generateRandomUuid();
     }
     throw new IllegalStateException(format("Exceeded max retry count of %s for finding unique analysis id", RETRY_LIMIT));
+  }
+
+  private String generateRandomUuid(){
+    return UUID.randomUUID().toString();
   }
 
 }
