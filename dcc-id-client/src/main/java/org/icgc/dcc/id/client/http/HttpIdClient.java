@@ -115,6 +115,14 @@ public class HttpIdClient implements IdClient {
   }
 
   @Override
+  public String createRandomAnalysisId() {
+    val analysisId = getRandomAnalysisId().get();
+    checkState(!isNullOrEmpty(analysisId),
+        "Failed to create a random analysis id");
+    return analysisId;
+  }
+
+  @Override
   public Optional<String> getDonorId(@NonNull String submittedDonorId, @NonNull String submittedProjectId) {
     return getDonorId(submittedDonorId, submittedProjectId, false);
   }
@@ -148,6 +156,14 @@ public class HttpIdClient implements IdClient {
         .queryParam("submittedAnalysisId", submittedAnalysisId)
         .queryParam("create", String.valueOf(create));
 
+    val id = getResponse(request);
+    validateUuid(id);
+    return id;
+  }
+
+  private Optional<String> getRandomAnalysisId() {
+    val request = resource
+        .path(ANALYSIS_ID_PATH);
     val id = getResponse(request);
     validateUuid(id);
     return id;

@@ -119,6 +119,12 @@ public class CachingIdClient extends ForwardingIdClient {
 
   @Override
   @SneakyThrows
+  public String createRandomAnalysisId() {
+    return analysisIdCache.get(new Key("", "",true)).get();
+  }
+
+  @Override
+  @SneakyThrows
   public String createDonorId(String submittedDonorId, String submittedProjectId) {
     return donorIdCache.get(new Key(submittedDonorId, submittedProjectId, true)).get();
   }

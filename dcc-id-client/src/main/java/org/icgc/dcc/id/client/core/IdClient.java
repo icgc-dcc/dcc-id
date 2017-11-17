@@ -59,6 +59,8 @@ public interface IdClient extends Closeable {
 
   String createAnalysisId(String submittedAnalysisId);
 
+  String createRandomAnalysisId();
+
   /**
    *  export the whole data from the db table as a string
    */

@@ -18,7 +18,6 @@
 package org.icgc.dcc.id.client.util;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.Strings;
 import com.google.common.hash.HashFunction;
 import lombok.NoArgsConstructor;
 import org.icgc.dcc.common.core.util.UUID5;
@@ -30,6 +29,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static com.google.common.base.Joiner.on;
+import static com.google.common.base.Strings.isNullOrEmpty;
 import static com.google.common.hash.Hashing.md5;
 
 /**
@@ -53,11 +53,15 @@ public class HashIdClient implements IdClient {
 
   @Override
   public Optional<String> getAnalysisId(String submittedAnalysisId) {
-    if(Strings.isNullOrEmpty(submittedAnalysisId)){
-      return Optional.of(UUID.randomUUID().toString());
+    if(isNullOrEmpty(submittedAnalysisId)){
+      return getRandomAnalysisId();
     } else {
       return Optional.of(submittedAnalysisId);
     }
+  }
+
+  public Optional<String> getRandomAnalysisId() {
+    return Optional.of(UUID.randomUUID().toString());
   }
 
   @Override
@@ -106,6 +110,11 @@ public class HashIdClient implements IdClient {
   @Override
   public String createAnalysisId(String submittedAnalysisId) {
     return getAnalysisId(submittedAnalysisId).get();
+  }
+
+  @Override
+  public String createRandomAnalysisId() {
+    return getRandomAnalysisId().get();
   }
 
   @Override

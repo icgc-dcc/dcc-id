@@ -76,6 +76,11 @@ public abstract class ForwardingIdClient implements IdClient {
   }
 
   @Override
+  public String createRandomAnalysisId() {
+    return delegate.createRandomAnalysisId();
+  }
+
+  @Override
   public String createSpecimenId(String submittedSpecimenId, String submittedProjectId) {
     return delegate.createSpecimenId(submittedSpecimenId, submittedProjectId);
   }
