@@ -18,24 +18,26 @@
 package org.icgc.dcc.id.client.util;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.Sets;
 import com.google.common.hash.HashFunction;
-import lombok.NoArgsConstructor;
+import lombok.val;
 import org.icgc.dcc.common.core.util.UUID5;
 import org.icgc.dcc.id.client.core.IdClient;
 import org.icgc.dcc.id.core.Prefixes;
 
 import java.io.IOException;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import static com.google.common.base.Joiner.on;
+import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static com.google.common.hash.Hashing.md5;
 
 /**
  * Stateless hash based {@link IdClient} implementation that returns a stable id based on it it's inputs.
  */
-@NoArgsConstructor
 public class HashIdClient implements IdClient {
 
   /**
@@ -44,25 +46,49 @@ public class HashIdClient implements IdClient {
   private static final HashFunction MD5 = md5();
   private static final Joiner JOINER = on(":");
 
+  private final boolean persistInMemory;
+  private final Set<String> ids = Sets.newHashSet();
   /**
    * Required for reflection in Loader
    */
   public HashIdClient(String serviceUri, String release) {
     // Empty
+    persistInMemory = false;
+  }
+
+  public HashIdClient(){
+    persistInMemory = false;
+  }
+
+
+  public HashIdClient(boolean persistInMemory){
+    this.persistInMemory = persistInMemory;
   }
 
   @Override
   public Optional<String> getAnalysisId(String submittedAnalysisId) {
     if(isNullOrEmpty(submittedAnalysisId)){
-      return getRandomAnalysisId();
+      return Optional.empty();
     } else {
-      return Optional.of(submittedAnalysisId);
+      if (persistInMemory){
+        return ids.contains(submittedAnalysisId) ? Optional.of(submittedAnalysisId) : Optional.empty();
+      } else {
+        return Optional.of(submittedAnalysisId);
+      }
     }
   }
 
-  public Optional<String> getRandomAnalysisId() {
-    return Optional.of(UUID.randomUUID().toString());
+  @Override
+  public String createAnalysisId(String submittedAnalysisId) {
+    checkState(!isNullOrEmpty(submittedAnalysisId),
+        "Failed to create analysis id. submittedAnalysisId: '%s'" ,
+        submittedAnalysisId);
+    if (persistInMemory){
+      ids.add(submittedAnalysisId);
+    }
+    return submittedAnalysisId;
   }
+
 
   @Override
   public Optional<String> getDonorId(String submittedDonorId, String submittedProjectId) {
@@ -108,13 +134,12 @@ public class HashIdClient implements IdClient {
   }
 
   @Override
-  public String createAnalysisId(String submittedAnalysisId) {
-    return getAnalysisId(submittedAnalysisId).get();
-  }
-
-  @Override
   public String createRandomAnalysisId() {
-    return getRandomAnalysisId().get();
+    val id = UUID.randomUUID().toString();
+    if (persistInMemory){
+      ids.add(id);
+    }
+    return id;
   }
 
   @Override
