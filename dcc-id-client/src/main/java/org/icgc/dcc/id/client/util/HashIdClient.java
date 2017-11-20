@@ -67,15 +67,10 @@ public class HashIdClient implements IdClient {
 
   @Override
   public Optional<String> getAnalysisId(String submittedAnalysisId) {
-    if(isNullOrEmpty(submittedAnalysisId)){
-      return Optional.empty();
-    } else {
-      if (persistInMemory){
-        return ids.contains(submittedAnalysisId) ? Optional.of(submittedAnalysisId) : Optional.empty();
-      } else {
-        return Optional.of(submittedAnalysisId);
-      }
+    if (ids.contains(submittedAnalysisId)){
+      return Optional.of(submittedAnalysisId);
     }
+    return Optional.empty();
   }
 
   @Override
@@ -133,6 +128,7 @@ public class HashIdClient implements IdClient {
     return Optional.of(UUID5.fromUTF8(UUID5.getNamespace(), Joiner.on('/').join(analysisId, fileName)).toString());
   }
 
+  //TODO: dcc-id issue #5 - replace UUID generation with JUG library to use UUID1
   @Override
   public String createRandomAnalysisId() {
     val id = UUID.randomUUID().toString();
