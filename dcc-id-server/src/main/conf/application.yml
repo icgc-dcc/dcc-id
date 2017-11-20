@@ -28,7 +28,7 @@ spring:
 
 # Server
 server:
-  port: 8445
+  port: 8443
   compression:
     enabled: true
     mime-types: text/tsv

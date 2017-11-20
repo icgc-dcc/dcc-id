@@ -12,7 +12,7 @@ import static java.util.Objects.isNull;
 
 public abstract class AnalysisRepository {
 
-  private static final int MAX_ATTEMPTS = 5;
+  private static final int MAX_ATTEMPTS = 1000;
 
   @SqlUpdate("INSERT INTO analysis_ids VALUES (:id)")
   abstract int insertId(@Bind("id") String id);
