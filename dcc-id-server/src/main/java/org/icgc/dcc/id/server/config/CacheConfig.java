@@ -17,17 +17,11 @@
  */
 package org.icgc.dcc.id.server.config;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
-import static net.sf.ehcache.config.PersistenceConfiguration.Strategy.NONE;
-
-import javax.management.MBeanServer;
-
 import lombok.val;
 import net.sf.ehcache.config.CacheConfiguration;
 import net.sf.ehcache.config.DiskStoreConfiguration;
 import net.sf.ehcache.config.PersistenceConfiguration;
 import net.sf.ehcache.management.ManagementService;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CachingConfigurerSupport;
@@ -38,6 +32,11 @@ import org.springframework.cache.interceptor.SimpleKeyGenerator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jmx.support.MBeanServerFactoryBean;
+
+import javax.management.MBeanServer;
+
+import static java.util.concurrent.TimeUnit.MINUTES;
+import static net.sf.ehcache.config.PersistenceConfiguration.Strategy.NONE;
 
 /**
  * Server wide caching configuration.

@@ -16,27 +16,47 @@
  */
 package org.icgc.dcc.id.server.controller;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.icgc.dcc.id.server.config.SecurityConfig.IdCreatable;
+import org.icgc.dcc.id.server.service.AnalysisService;
+import org.icgc.dcc.id.server.service.ExportService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.UUID;
+import java.io.IOException;
+
+import javax.servlet.http.HttpServletResponse;
 
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
 @RestController
 @RequestMapping("/analysis")
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class AnalysisController {
 
   /**
-   * This is just a simple endpoint to return a random UUID.
    * This is to establish a contract for providing analysis/bundle ids in the future
    * by other implementations.
    */
+  @NonNull private final AnalysisService analysisService;
+  @NonNull private final ExportService exportService;
+
   @IdCreatable
   @RequestMapping(value = "/id", method = GET)
-  public String analysisId() {
-    return UUID.randomUUID().toString();
+  public String analysisId(
+      // Optional
+      @RequestParam(value = "analysisId", defaultValue = "") String analysisId,
+      @RequestParam(value = "create", defaultValue = "true") boolean create) {
+    return analysisService.analysisId(create, analysisId);
+  }
+
+  @RequestMapping(value = "/export", method = GET)
+  public void export(HttpServletResponse response) throws IOException {
+    response.setContentType("text/tsv");
+    exportService.exportAnalysisIds(response.getOutputStream());
   }
 
 }

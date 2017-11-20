@@ -17,21 +17,18 @@
  */
 package org.icgc.dcc.id.client.util;
 
-import java.util.Optional;
-import java.util.UUID;
-
-import com.google.common.base.Joiner;
-import org.icgc.dcc.common.core.util.UUID5;
-import org.icgc.dcc.id.client.core.IdClient;
-
 import com.google.common.base.Function;
+import com.google.common.base.Joiner;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.Value;
+import org.icgc.dcc.common.core.util.UUID5;
+import org.icgc.dcc.id.client.core.IdClient;
+
+import java.util.Optional;
 
 public class CachingIdClient extends ForwardingIdClient {
 
@@ -40,6 +37,7 @@ public class CachingIdClient extends ForwardingIdClient {
    */
   @NonNull
   private final LoadingCache<Key, Optional<String>> donorIdCache;
+  private final LoadingCache<Key, Optional<String>> analysisIdCache;
   private final LoadingCache<Key, Optional<String>> specimenIdCache;
   private final LoadingCache<Key, Optional<String>> sampleIdCache;
   private final LoadingCache<Key, Optional<String>> fileIdCache;
@@ -51,6 +49,10 @@ public class CachingIdClient extends ForwardingIdClient {
         createCache(key -> key.isCreate() ? Optional
             .of(delegate.createDonorId(key.getSubmittedId(), key.getSubmittedProjectId())) : delegate
                 .getDonorId(key.getSubmittedId(), key.getSubmittedProjectId()));
+    this.analysisIdCache =
+        createCache(key -> key.isCreate() ? Optional
+            .of(delegate.createAnalysisId(key.getSubmittedId())) : delegate
+            .getAnalysisId(key.getSubmittedId()));
     this.specimenIdCache =
         createCache(key -> key.isCreate() ? Optional
             .of(delegate.createSpecimenId(key.getSubmittedId(), key.getSubmittedProjectId())) : delegate
@@ -77,6 +79,12 @@ public class CachingIdClient extends ForwardingIdClient {
 
   @Override
   @SneakyThrows
+  public Optional<String> getAnalysisId(String submittedAnalysisId) {
+    return analysisIdCache.get(new Key(submittedAnalysisId, "", false));
+  }
+
+  @Override
+  @SneakyThrows
   public Optional<String> getSpecimenId(String submittedSpecimenId, String submittedProjectId) {
     return specimenIdCache.get(new Key(submittedSpecimenId, submittedProjectId, false));
   }
@@ -98,14 +106,22 @@ public class CachingIdClient extends ForwardingIdClient {
     return Optional.of(UUID5.fromUTF8(UUID5.getNamespace(), Joiner.on('/').join(analysisId, fileName)).toString());
   }
 
-  @Override
-  public Optional<String> getAnalysisId() {
-    return Optional.of(UUID.randomUUID().toString());
-  }
 
   //
   // Read-write
   //
+
+  @Override
+  @SneakyThrows
+  public String createAnalysisId(String submittedAnalysisId) {
+    return analysisIdCache.get(new Key(submittedAnalysisId, "",true)).get();
+  }
+
+  @Override
+  @SneakyThrows
+  public String createRandomAnalysisId() {
+    return analysisIdCache.get(new Key("", "",true)).get();
+  }
 
   @Override
   @SneakyThrows

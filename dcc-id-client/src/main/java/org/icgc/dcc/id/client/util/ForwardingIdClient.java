@@ -17,13 +17,12 @@
  */
 package org.icgc.dcc.id.client.util;
 
-import java.io.IOException;
-import java.util.Optional;
-
-import org.icgc.dcc.id.client.core.IdClient;
-
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.icgc.dcc.id.client.core.IdClient;
+
+import java.io.IOException;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 public abstract class ForwardingIdClient implements IdClient {
@@ -37,6 +36,11 @@ public abstract class ForwardingIdClient implements IdClient {
   @Override
   public Optional<String> getDonorId(String submittedDonorId, String submittedProjectId) {
     return delegate.getDonorId(submittedDonorId, submittedProjectId);
+  }
+
+  @Override
+  public Optional<String> getAnalysisId(String submittedAnalysisId) {
+    return delegate.getAnalysisId(submittedAnalysisId);
   }
 
   @Override
@@ -64,6 +68,16 @@ public abstract class ForwardingIdClient implements IdClient {
   @Override
   public String createDonorId(String submittedDonorId, String submittedProjectId) {
     return delegate.createDonorId(submittedDonorId, submittedProjectId);
+  }
+
+  @Override
+  public String createAnalysisId(String submittedAnalysisId) {
+    return delegate.createAnalysisId(submittedAnalysisId);
+  }
+
+  @Override
+  public String createRandomAnalysisId() {
+    return delegate.createRandomAnalysisId();
   }
 
   @Override

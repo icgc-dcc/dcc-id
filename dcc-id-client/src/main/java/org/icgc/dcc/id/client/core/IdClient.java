@@ -40,7 +40,7 @@ public interface IdClient extends Closeable {
 
   Optional<String> getObjectId(String analysisId, String fileName);
 
-  Optional<String> getAnalysisId();
+  Optional<String> getAnalysisId(String submittedAnalysisId);
 
   /**
    * Create if it doesn't exist
@@ -56,6 +56,10 @@ public interface IdClient extends Closeable {
       String mutation, String mutationType, String assemblyVersion);
 
   String createFileId(String submittedFileId);
+
+  String createAnalysisId(String submittedAnalysisId);
+
+  String createRandomAnalysisId();
 
   /**
    *  export the whole data from the db table as a string
@@ -79,6 +83,10 @@ public interface IdClient extends Closeable {
 
   default Optional<String> getAllFileIds(){
     throw new ExportDataNotSupportedException("file");
+  }
+
+  default Optional<String> getAllAnalysisIds() {
+    throw new ExportDataNotSupportedException("analysis");
   }
 
 }

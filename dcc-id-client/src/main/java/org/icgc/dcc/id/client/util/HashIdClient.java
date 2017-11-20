@@ -17,26 +17,27 @@
  */
 package org.icgc.dcc.id.client.util;
 
-import static com.google.common.base.Joiner.on;
-import static com.google.common.hash.Hashing.md5;
-
-import java.io.IOException;
-import java.util.Optional;
-import java.util.UUID;
-
+import com.google.common.base.Joiner;
+import com.google.common.collect.Sets;
+import com.google.common.hash.HashFunction;
+import lombok.val;
 import org.icgc.dcc.common.core.util.UUID5;
 import org.icgc.dcc.id.client.core.IdClient;
 import org.icgc.dcc.id.core.Prefixes;
 
-import com.google.common.base.Joiner;
-import com.google.common.hash.HashFunction;
+import java.io.IOException;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
-import lombok.NoArgsConstructor;
+import static com.google.common.base.Joiner.on;
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.base.Strings.isNullOrEmpty;
+import static com.google.common.hash.Hashing.md5;
 
 /**
  * Stateless hash based {@link IdClient} implementation that returns a stable id based on it it's inputs.
  */
-@NoArgsConstructor
 public class HashIdClient implements IdClient {
 
   /**
@@ -45,12 +46,44 @@ public class HashIdClient implements IdClient {
   private static final HashFunction MD5 = md5();
   private static final Joiner JOINER = on(":");
 
+  private final boolean persistInMemory;
+  private final Set<String> ids = Sets.newHashSet();
   /**
    * Required for reflection in Loader
    */
   public HashIdClient(String serviceUri, String release) {
     // Empty
+    persistInMemory = false;
   }
+
+  public HashIdClient(){
+    persistInMemory = false;
+  }
+
+
+  public HashIdClient(boolean persistInMemory){
+    this.persistInMemory = persistInMemory;
+  }
+
+  @Override
+  public Optional<String> getAnalysisId(String submittedAnalysisId) {
+    if (ids.contains(submittedAnalysisId)){
+      return Optional.of(submittedAnalysisId);
+    }
+    return Optional.empty();
+  }
+
+  @Override
+  public String createAnalysisId(String submittedAnalysisId) {
+    checkState(!isNullOrEmpty(submittedAnalysisId),
+        "Failed to create analysis id. submittedAnalysisId: '%s'" ,
+        submittedAnalysisId);
+    if (persistInMemory){
+      ids.add(submittedAnalysisId);
+    }
+    return submittedAnalysisId;
+  }
+
 
   @Override
   public Optional<String> getDonorId(String submittedDonorId, String submittedProjectId) {
@@ -95,9 +128,14 @@ public class HashIdClient implements IdClient {
     return Optional.of(UUID5.fromUTF8(UUID5.getNamespace(), Joiner.on('/').join(analysisId, fileName)).toString());
   }
 
+  //TODO: dcc-id issue #5 - replace UUID generation with JUG library to use UUID1
   @Override
-  public Optional<String> getAnalysisId() {
-    return Optional.of(UUID.randomUUID().toString());
+  public String createRandomAnalysisId() {
+    val id = UUID.randomUUID().toString();
+    if (persistInMemory){
+      ids.add(id);
+    }
+    return id;
   }
 
   @Override

@@ -53,7 +53,13 @@ CREATE TABLE project_ids
  
   PRIMARY KEY (project_id) 
 );
-CREATE TABLE donor_ids 
+CREATE TABLE analysis_ids
+(
+  id   VARCHAR(512) NOT NULL,
+
+  PRIMARY KEY(id)
+);
+CREATE TABLE donor_ids
 ( 
   id         BIGSERIAL NOT NULL, 
 

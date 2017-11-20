@@ -17,10 +17,8 @@
  */
 package org.icgc.dcc.id.server.config;
 
-import javax.sql.DataSource;
-
 import lombok.NoArgsConstructor;
-
+import org.icgc.dcc.id.server.repository.AnalysisRepository;
 import org.icgc.dcc.id.server.repository.DonorRepository;
 import org.icgc.dcc.id.server.repository.FileRepository;
 import org.icgc.dcc.id.server.repository.MutationRepository;
@@ -31,6 +29,8 @@ import org.skife.jdbi.v2.DBI;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import javax.sql.DataSource;
 
 /**
  * Data access layer configuration.
@@ -50,6 +50,11 @@ public class RepositoryConfig {
   @Bean
   public ProjectRepository projectRepository() {
     return dbi().open(ProjectRepository.class);
+  }
+
+  @Bean
+  public AnalysisRepository analysisRepository() {
+    return dbi().open(AnalysisRepository.class);
   }
 
   @Bean
