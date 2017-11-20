@@ -11,15 +11,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class HashIdClientTest {
 
-  private static IdClient createIdClient(){
-    return new HashIdClient(true);
-  }
-
-  private static final String SUBMITTED_ANALYSIS_ID = UUID.randomUUID().toString();
-
+  private static final String SUBMITTED_ANALYSIS_ID_1 = UUID.randomUUID().toString();
+  private static final String SUBMITTED_ANALYSIS_ID_2 = UUID.randomUUID().toString();
 
   @Test
-  public void testGetAnalysisId() {
+  public void testCreateRandomAnalysisId() {
     val client = createIdClient();
     val id1 = client.createRandomAnalysisId();
     val id2 = client.createRandomAnalysisId();
@@ -31,11 +27,28 @@ public class HashIdClientTest {
   @Test
   public void testCreateAnalysisId() {
     val client = createIdClient();
-    assertThat(client.getAnalysisId(SUBMITTED_ANALYSIS_ID).isPresent()).isFalse();
-    val id1 = client.createAnalysisId(SUBMITTED_ANALYSIS_ID);
-    val id2 = client.createAnalysisId(SUBMITTED_ANALYSIS_ID);
-    assertThat(id1).isEqualTo(id2);
-    assertThat(client.getAnalysisId(id2).isPresent()).isTrue();
+    assertThat(client.getAnalysisId(SUBMITTED_ANALYSIS_ID_1).isPresent()).isFalse();
+    assertThat(client.getAnalysisId(SUBMITTED_ANALYSIS_ID_2).isPresent()).isFalse();
+    val id1 = client.createAnalysisId(SUBMITTED_ANALYSIS_ID_1);
+    val id2 = client.createAnalysisId(SUBMITTED_ANALYSIS_ID_1);
+    val id3 = client.createAnalysisId(SUBMITTED_ANALYSIS_ID_2);
+    val id4 = client.createAnalysisId(SUBMITTED_ANALYSIS_ID_1);
+    assertThat(client.getAnalysisId(SUBMITTED_ANALYSIS_ID_1).isPresent()).isTrue();
+    assertThat(client.getAnalysisId(SUBMITTED_ANALYSIS_ID_2).isPresent()).isTrue();
+    assertThat(id1).isEqualTo(SUBMITTED_ANALYSIS_ID_1);
+    assertThat(id2).isEqualTo(SUBMITTED_ANALYSIS_ID_1);
+    assertThat(id3).isEqualTo(SUBMITTED_ANALYSIS_ID_2);
+    assertThat(id4).isEqualTo(SUBMITTED_ANALYSIS_ID_1);
+  }
+
+  @Test
+  public void testGetNonExistingAnalysisId() {
+    val client = createIdClient();
+    assertThat(client.getAnalysisId("anything").isPresent()).isFalse();
+  }
+
+  private static IdClient createIdClient(){
+    return new HashIdClient(true);
   }
 
 }
