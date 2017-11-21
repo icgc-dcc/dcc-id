@@ -4,8 +4,7 @@ import org.icgc.dcc.id.server.repository.AnalysisRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.UUID;
-
+import static com.fasterxml.uuid.Generators.timeBasedGenerator;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.lang.String.format;
@@ -50,7 +49,7 @@ public class AnalysisService {
   }
 
   private String generateRandomUuid(){
-    return UUID.randomUUID().toString();
+    return timeBasedGenerator().generate().toString();
   }
 
 }

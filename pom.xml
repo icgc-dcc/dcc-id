@@ -53,6 +53,12 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
         <version>${dcc-common.version}</version>
       </dependency>
 
+      <dependency>
+        <groupId>com.fasterxml.uuid</groupId>
+        <artifactId>java-uuid-generator</artifactId>
+        <version>${jug.version}</version>
+      </dependency>
+
       <!-- Spring -->
       <dependency>
         <groupId>org.springframework.boot</groupId>
@@ -116,6 +122,8 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
 
     <!-- Versions - DB -->
     <jdbi.version>2.53</jdbi.version>
+
+    <jug.version>3.1.3</jug.version>
   </properties>
 
 </project>

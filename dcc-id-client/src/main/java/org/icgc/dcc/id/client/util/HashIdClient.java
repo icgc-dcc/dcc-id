@@ -28,8 +28,8 @@ import org.icgc.dcc.id.core.Prefixes;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 
+import static com.fasterxml.uuid.Generators.timeBasedGenerator;
 import static com.google.common.base.Joiner.on;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Strings.isNullOrEmpty;
@@ -131,7 +131,7 @@ public class HashIdClient implements IdClient {
   //TODO: dcc-id issue #5 - replace UUID generation with JUG library to use UUID1
   @Override
   public String createRandomAnalysisId() {
-    val id = UUID.randomUUID().toString();
+    val id = timeBasedGenerator().generate().toString();
     if (persistInMemory){
       ids.add(id);
     }
