@@ -5,14 +5,13 @@ import org.icgc.dcc.id.client.core.IdClient;
 import org.icgc.dcc.id.client.util.HashIdClient;
 import org.junit.Test;
 
-import java.util.UUID;
-
+import static com.fasterxml.uuid.Generators.timeBasedGenerator;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class HashIdClientTest {
 
-  private static final String SUBMITTED_ANALYSIS_ID_1 = UUID.randomUUID().toString();
-  private static final String SUBMITTED_ANALYSIS_ID_2 = UUID.randomUUID().toString();
+  private static final String SUBMITTED_ANALYSIS_ID_1 = timeBasedGenerator().generate().toString();
+  private static final String SUBMITTED_ANALYSIS_ID_2 = timeBasedGenerator().generate().toString();
 
   @Test
   public void testCreateRandomAnalysisId() {

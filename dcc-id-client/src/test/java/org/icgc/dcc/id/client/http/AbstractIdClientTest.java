@@ -31,10 +31,10 @@ import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 
-import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static com.fasterxml.uuid.Generators.timeBasedGenerator;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
@@ -58,7 +58,7 @@ public abstract class AbstractIdClientTest {
 
   private static final int SERVER_PORT = 22223;
   private static final Long RESPONSE_ID = 1000L;
-  private static final String SUBMITTED_ANALYSIS_ID = UUID.randomUUID().toString();
+  private static final String SUBMITTED_ANALYSIS_ID = timeBasedGenerator().generate().toString();
 
   @Rule
   public WireMockRule wireMockRule = new WireMockRule(SERVER_PORT);
