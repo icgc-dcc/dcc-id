@@ -48,9 +48,9 @@ public class AnalysisController {
   @RequestMapping(value = "/id", method = GET)
   public String analysisId(
       // Optional
-      @RequestParam(value = "analysisId", defaultValue = "") String analysisId,
+      @RequestParam(value = "submittedAnalysisId", defaultValue = "") String submittedAnalysisId,
       @RequestParam(value = "create", defaultValue = "true") boolean create) {
-    return analysisService.analysisId(create, analysisId);
+    return analysisService.analysisId(create, submittedAnalysisId);
   }
 
   @RequestMapping(value = "/export", method = GET)

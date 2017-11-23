@@ -34,6 +34,12 @@ import static com.google.common.base.Joiner.on;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static com.google.common.hash.Hashing.md5;
+import static org.icgc.dcc.id.core.Prefixes.DONOR_ID_PREFIX;
+import static org.icgc.dcc.id.core.Prefixes.MUTATION_ID_PREFIX;
+import static org.icgc.dcc.id.core.Prefixes.SAMPLE_ID_PREFIX;
+import static org.icgc.dcc.id.core.Prefixes.SPECIMEN_ID_PREFIX;
+import static org.icgc.dcc.id.util.Ids.validateAnalysisId;
+import static org.icgc.dcc.id.util.Ids.validateUuid;
 
 /**
  * Stateless hash based {@link IdClient} implementation that returns a stable id based on it it's inputs.
@@ -67,6 +73,7 @@ public class HashIdClient implements IdClient {
 
   @Override
   public Optional<String> getAnalysisId(String submittedAnalysisId) {
+    validateAnalysisId(submittedAnalysisId);
     if (ids.contains(submittedAnalysisId)){
       return Optional.of(submittedAnalysisId);
     }
@@ -75,6 +82,7 @@ public class HashIdClient implements IdClient {
 
   @Override
   public String createAnalysisId(String submittedAnalysisId) {
+    validateAnalysisId(submittedAnalysisId);
     checkState(!isNullOrEmpty(submittedAnalysisId),
         "Failed to create analysis id. submittedAnalysisId: '%s'" ,
         submittedAnalysisId);
@@ -87,21 +95,21 @@ public class HashIdClient implements IdClient {
 
   @Override
   public Optional<String> getDonorId(String submittedDonorId, String submittedProjectId) {
-    return Optional.of(Prefixes.DONOR_ID_PREFIX + generateId(
+    return Optional.of(DONOR_ID_PREFIX + generateId(
         submittedDonorId,
         submittedProjectId));
   }
 
   @Override
   public Optional<String> getSampleId(String submittedSampleId, String submittedProjectId) {
-    return Optional.of(Prefixes.SAMPLE_ID_PREFIX + generateId(
+    return Optional.of(SAMPLE_ID_PREFIX + generateId(
         submittedSampleId,
         submittedProjectId));
   }
 
   @Override
   public Optional<String> getSpecimenId(String submittedSpecimenId, String submittedProjectId) {
-    return Optional.of(Prefixes.SPECIMEN_ID_PREFIX + generateId(
+    return Optional.of(SPECIMEN_ID_PREFIX + generateId(
         submittedSpecimenId,
         submittedProjectId));
   }
@@ -109,7 +117,7 @@ public class HashIdClient implements IdClient {
   @Override
   public Optional<String> getMutationId(String chromosome, String chromosomeStart, String chromosomeEnd,
       String mutation, String mutationType, String assemblyVersion) {
-    return Optional.of(Prefixes.MUTATION_ID_PREFIX + generateId(
+    return Optional.of(MUTATION_ID_PREFIX + generateId(
         chromosome,
         chromosomeStart,
         chromosomeEnd,
@@ -128,10 +136,10 @@ public class HashIdClient implements IdClient {
     return Optional.of(UUID5.fromUTF8(UUID5.getNamespace(), Joiner.on('/').join(analysisId, fileName)).toString());
   }
 
-  //TODO: dcc-id issue #5 - replace UUID generation with JUG library to use UUID1
   @Override
   public String createRandomAnalysisId() {
     val id = timeBasedGenerator().generate().toString();
+    validateUuid(id);
     if (persistInMemory){
       ids.add(id);
     }

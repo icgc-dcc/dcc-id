@@ -17,6 +17,10 @@
  */
 package org.icgc.dcc.id.core;
 
+import java.util.function.Supplier;
+
+import static java.lang.String.format;
+
 public class IdentifierException extends RuntimeException {
 
   public IdentifierException(String message) {
@@ -25,6 +29,25 @@ public class IdentifierException extends RuntimeException {
 
   public IdentifierException(Throwable cause) {
     super(cause);
+  }
+
+  public static void checkIdentifier(boolean expression, String formatString, Object...args){
+    if (!expression){
+      throw new IdentifierException(format(formatString, args));
+    }
+  }
+
+  public static <T> T tryIdentifier( Supplier<T> supplier,Class<? extends Throwable> expectedException, String formatString,
+      Object...args){
+    try{
+      return supplier.get();
+    } catch (Throwable e){
+      if (expectedException.isInstance(e)){
+        throw new IdentifierException(format(formatString, args));
+      } else {
+        throw e;
+      }
+    }
   }
 
 }

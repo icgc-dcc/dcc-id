@@ -19,15 +19,15 @@ public class AnalysisService {
   private AnalysisRepository analysisRepository;
 
   /**
-   * If the analysisId is null or empty, an unique analysisId is created,
+   * If the submittedAnalysisId is null or empty, an unique submittedAnalysisId is created,
    * otherwise, used.
-   * @param analysisId
-   * @return analysisId
+   * @param submittedAnalysisId
+   * @return submittedAnalysisId
    */
-  public String analysisId(boolean create, String analysisId){
-    String id = analysisId;
+  public String analysisId(boolean create, String submittedAnalysisId){
+    String id = submittedAnalysisId;
     if (isNullOrEmpty(id)) {
-      checkState(create, "Cannot retrieve an analysisId when create = false and analysisId is null/empty");
+      checkState(create, "Cannot retrieve an submittedAnalysisId when create = false and submittedAnalysisId is null/empty");
       id = createUniqueId();
     }
     return analysisRepository.findId(create, id);
