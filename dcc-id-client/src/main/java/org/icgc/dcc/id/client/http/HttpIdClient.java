@@ -49,6 +49,7 @@ import static org.icgc.dcc.id.core.Prefixes.FILE_ID_PREFIX;
 import static org.icgc.dcc.id.core.Prefixes.MUTATION_ID_PREFIX;
 import static org.icgc.dcc.id.core.Prefixes.SAMPLE_ID_PREFIX;
 import static org.icgc.dcc.id.core.Prefixes.SPECIMEN_ID_PREFIX;
+import static org.icgc.dcc.id.util.Ids.validateAnalysisId;
 import static org.icgc.dcc.id.util.Ids.validateId;
 import static org.icgc.dcc.id.util.Ids.validateUuid;
 
@@ -151,6 +152,7 @@ public class HttpIdClient implements IdClient {
   }
 
   private Optional<String> getAnalysisId(String submittedAnalysisId, boolean create) {
+    validateAnalysisId(submittedAnalysisId);
     val request = resource
         .path(ANALYSIS_ID_PATH)
         .queryParam("submittedAnalysisId", submittedAnalysisId)
