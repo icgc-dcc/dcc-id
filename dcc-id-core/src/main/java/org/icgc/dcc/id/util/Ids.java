@@ -34,13 +34,14 @@ import static java.lang.String.format;
 import static java.util.regex.Pattern.compile;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.id.core.IdentifierException.checkIdentifier;
-import static org.icgc.dcc.id.core.IdentifierException.tryIdentifier;
+import static org.icgc.dcc.id.core.IdentifierFormatException.checkIdFormat;
+import static org.icgc.dcc.id.core.IdentifierFormatException.tryIdFormat;
 
 @NoArgsConstructor(access = PRIVATE)
 public final class Ids { // NOPMD
-  private static final int MAX_ANALYSIS_ID_CHARS = 500;
+  private static final int MAX_ANALYSIS_ID_CHARS = 512;
   private static final Pattern ANALYSIS_ID_PATTERN =
-      compile("^[a-zA-Z0-9]{1}[a-zA-Z0-9-_]{2,"+MAX_ANALYSIS_ID_CHARS+"}$");
+      compile("^[a-zA-Z0-9]{1}[a-zA-Z0-9-_]{2,"+(MAX_ANALYSIS_ID_CHARS-1)+"}$");
 
   private static final Map<String, Pattern> PREFIX_PATTERN = ImmutableMap.<String, Pattern> builder()
       .put(compilePattern(Prefixes.DONOR_ID_PREFIX))
@@ -61,7 +62,7 @@ public final class Ids { // NOPMD
   }
 
   public static void validateAnalysisId(@NonNull String id){
-    checkIdentifier(ANALYSIS_ID_PATTERN.matcher(id).matches(),
+    checkIdFormat(ANALYSIS_ID_PATTERN.matcher(id).matches(),
         "ID '%s' does not conform to the analysisId string format: %s",
           id, ANALYSIS_ID_PATTERN.pattern());
   }
@@ -73,7 +74,7 @@ public final class Ids { // NOPMD
   }
 
   public static void validateUuid(@NonNull String id){
-    tryIdentifier(() -> UUID.fromString(id),IllegalArgumentException.class,
+    tryIdFormat(() -> UUID.fromString(id),IllegalArgumentException.class,
     "ID '%s' does not conform to the string representation of UUID", id );
   }
 

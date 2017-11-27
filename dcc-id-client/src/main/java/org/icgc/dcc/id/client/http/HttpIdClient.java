@@ -50,7 +50,6 @@ import static org.icgc.dcc.id.core.Prefixes.MUTATION_ID_PREFIX;
 import static org.icgc.dcc.id.core.Prefixes.SAMPLE_ID_PREFIX;
 import static org.icgc.dcc.id.core.Prefixes.SPECIMEN_ID_PREFIX;
 import static org.icgc.dcc.id.util.Ids.validateId;
-import static org.icgc.dcc.id.util.Ids.validateUuid;
 
 @Slf4j
 public class HttpIdClient implements IdClient {
@@ -161,9 +160,7 @@ public class HttpIdClient implements IdClient {
   private Optional<String> getRandomAnalysisId() {
     val request = resource
         .path(ANALYSIS_ID_PATH);
-    val id = getResponse(request);
-    validateUuid(id);
-    return id;
+    return getResponse(request);
   }
 
   @Override

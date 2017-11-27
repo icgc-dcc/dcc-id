@@ -14,6 +14,8 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.lang.String.format;
 import static org.icgc.dcc.id.core.IdentifierException.checkIdentifier;
 import static org.icgc.dcc.id.server.repository.NotFoundException.checkExistence;
+import static org.icgc.dcc.id.util.Ids.validateAnalysisId;
+import static org.icgc.dcc.id.util.Ids.validateUuid;
 
 @Service
 public class AnalysisService {
@@ -37,6 +39,7 @@ public class AnalysisService {
           + "submittedAnalysisId is null/empty");
       id = createUniqueId();
     }
+    validateAnalysisId(id);
     return findId(create, id);
   }
 
@@ -47,6 +50,7 @@ public class AnalysisService {
    * @return  boolean
    */
   public boolean isExist(@NonNull String submittedAnalysisId){
+    validateAnalysisId(submittedAnalysisId);
     return isValidId(submittedAnalysisId) && isValidId(analysisRepository.getId(submittedAnalysisId));
   }
 
@@ -60,6 +64,7 @@ public class AnalysisService {
     int retryCount = 0;
     while (retryCount < RETRY_LIMIT){
       if (!isExist(id)){
+        validateUuid(id);
         return id;
       }
       retryCount++;
