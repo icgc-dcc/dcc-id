@@ -34,7 +34,8 @@ import static java.lang.String.format;
 import static java.util.regex.Pattern.compile;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.id.core.IdentifierException.checkIdentifier;
-import static org.icgc.dcc.id.core.IdentifierException.tryIdentifier;
+import static org.icgc.dcc.id.core.IdentifierFormatException.checkIdFormat;
+import static org.icgc.dcc.id.core.IdentifierFormatException.tryIdFormat;
 
 @NoArgsConstructor(access = PRIVATE)
 public final class Ids { // NOPMD
@@ -61,7 +62,7 @@ public final class Ids { // NOPMD
   }
 
   public static void validateAnalysisId(@NonNull String id){
-    checkIdentifier(ANALYSIS_ID_PATTERN.matcher(id).matches(),
+    checkIdFormat(ANALYSIS_ID_PATTERN.matcher(id).matches(),
         "ID '%s' does not conform to the analysisId string format: %s",
           id, ANALYSIS_ID_PATTERN.pattern());
   }
@@ -73,7 +74,7 @@ public final class Ids { // NOPMD
   }
 
   public static void validateUuid(@NonNull String id){
-    tryIdentifier(() -> UUID.fromString(id),IllegalArgumentException.class,
+    tryIdFormat(() -> UUID.fromString(id),IllegalArgumentException.class,
     "ID '%s' does not conform to the string representation of UUID", id );
   }
 
