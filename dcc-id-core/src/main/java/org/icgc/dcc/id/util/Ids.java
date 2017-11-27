@@ -22,7 +22,6 @@ import com.google.common.collect.Maps;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.val;
-import org.icgc.dcc.id.core.IdentifierException;
 import org.icgc.dcc.id.core.Prefixes;
 
 import java.util.Map;
@@ -32,10 +31,16 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 
 import static java.lang.String.format;
+import static java.util.regex.Pattern.compile;
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.id.core.IdentifierException.checkIdentifier;
+import static org.icgc.dcc.id.core.IdentifierException.tryIdentifier;
 
 @NoArgsConstructor(access = PRIVATE)
 public final class Ids { // NOPMD
+  private static final int MAX_ANALYSIS_ID_CHARS = 500;
+  private static final Pattern ANALYSIS_ID_PATTERN =
+      compile("^[a-zA-Z0-9]{1}[a-zA-Z0-9-_]{2,"+MAX_ANALYSIS_ID_CHARS+"}$");
 
   private static final Map<String, Pattern> PREFIX_PATTERN = ImmutableMap.<String, Pattern> builder()
       .put(compilePattern(Prefixes.DONOR_ID_PREFIX))
@@ -49,21 +54,33 @@ public final class Ids { // NOPMD
   public static void validateId(@NonNull Optional<String> idOptional, @NonNull String prefix) {
     if (idOptional.isPresent()) {
       val id = idOptional.get(); // NOPMD
+      checkIdentifier(PREFIX_PATTERN.containsKey(prefix),"ID Prefix '%s' does not exist", prefix);
       val pattern = PREFIX_PATTERN.get(prefix);
-      if (!pattern.matcher(id).matches()) {
-        throw new IdentifierException(format("ID '%s' does not match pattern %s", id, pattern));
-      }
+      checkIdentifier(pattern.matcher(id).matches(),"ID '%s' does not match pattern %s", id, pattern);
     }
+  }
+
+  public static void validateAnalysisId(@NonNull String id){
+    checkIdentifier(ANALYSIS_ID_PATTERN.matcher(id).matches(),
+        "ID '%s' does not conform to the analysisId string format: %s",
+          id, ANALYSIS_ID_PATTERN.pattern());
+  }
+  public static void validateAnalysisId(@NonNull Optional<String> idOptional){
+    if(idOptional.isPresent()){
+      val id = idOptional.get();
+      validateAnalysisId(id);
+    }
+  }
+
+  public static void validateUuid(@NonNull String id){
+    tryIdentifier(() -> UUID.fromString(id),IllegalArgumentException.class,
+    "ID '%s' does not conform to the string representation of UUID", id );
   }
 
   public static void validateUuid(@NonNull Optional<String> idOptional){
     if(idOptional.isPresent()){
       val id = idOptional.get();
-      try{
-        UUID.fromString(id);
-      } catch (IllegalArgumentException e){
-        throw new IdentifierException(format("ID '%s' does not conform to the string representation of UUID", id ));
-      }
+      validateUuid(id);
     }
   }
 
@@ -72,8 +89,7 @@ public final class Ids { // NOPMD
   }
 
   private static Entry<String, Pattern> compilePattern(String prefix) {
-    val pattern = Pattern.compile(format("^%s\\d+$", prefix));
-
+    val pattern = compile(format("^%s\\d+$", prefix));
     return Maps.immutableEntry(prefix, pattern);
   }
 

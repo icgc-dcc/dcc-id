@@ -17,14 +17,14 @@
  */
 package org.icgc.dcc.id.util;
 
-import static java.lang.String.format;
-import static org.icgc.dcc.id.util.Ids.validateId;
-
-import java.util.Optional;
-
 import org.icgc.dcc.id.core.IdentifierException;
 import org.icgc.dcc.id.core.Prefixes;
 import org.junit.Test;
+
+import java.util.Optional;
+
+import static java.lang.String.format;
+import static org.icgc.dcc.id.util.Ids.validateId;
 
 public class IdsTest {
 

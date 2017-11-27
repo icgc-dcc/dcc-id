@@ -41,6 +41,7 @@ DROP TABLE IF EXISTS specimen_ids;
 DROP TABLE IF EXISTS sample_ids;
 DROP TABLE IF EXISTS mutation_ids;
 DROP TABLE IF EXISTS file_ids;
+DROP TABLE IF EXISTS analysis_ids;
 
 /* Create tables */
 CREATE TABLE project_ids 

@@ -31,6 +31,7 @@ import org.springframework.cache.interceptor.KeyGenerator;
 import org.springframework.cache.interceptor.SimpleKeyGenerator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.jmx.support.MBeanServerFactoryBean;
 
 import javax.management.MBeanServer;
@@ -43,6 +44,7 @@ import static net.sf.ehcache.config.PersistenceConfiguration.Strategy.NONE;
  */
 @Configuration
 @EnableCaching
+@Profile("production")
 public class CacheConfig extends CachingConfigurerSupport {
 
   @Value("${cache.dir}")

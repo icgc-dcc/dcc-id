@@ -21,6 +21,8 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.experimental.Accessors;
 
+import static java.lang.String.format;
+
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors
@@ -28,5 +30,11 @@ public class NotFoundException extends RuntimeException {
 
   @NonNull
   private final String message;
+
+  public static void checkExistence(boolean expression, String formatString, Object...args){
+    if(!expression){
+      throw new NotFoundException(format(formatString, args));
+    }
+  }
 
 }

@@ -26,9 +26,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.IOException;
-
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
@@ -48,9 +47,9 @@ public class AnalysisController {
   @RequestMapping(value = "/id", method = GET)
   public String analysisId(
       // Optional
-      @RequestParam(value = "analysisId", defaultValue = "") String analysisId,
+      @RequestParam(value = "submittedAnalysisId", defaultValue = "") String submittedAnalysisId,
       @RequestParam(value = "create", defaultValue = "true") boolean create) {
-    return analysisService.analysisId(create, analysisId);
+    return analysisService.analysisId(create, submittedAnalysisId);
   }
 
   @RequestMapping(value = "/export", method = GET)
