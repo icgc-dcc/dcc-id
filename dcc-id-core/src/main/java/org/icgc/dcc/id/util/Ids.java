@@ -38,9 +38,9 @@ import static org.icgc.dcc.id.core.IdentifierException.tryIdentifier;
 
 @NoArgsConstructor(access = PRIVATE)
 public final class Ids { // NOPMD
-  private static final int MAX_ANALYSIS_ID_CHARS = 500;
+  private static final int MAX_ANALYSIS_ID_CHARS = 512;
   private static final Pattern ANALYSIS_ID_PATTERN =
-      compile("^[a-zA-Z0-9]{1}[a-zA-Z0-9-_]{2,"+MAX_ANALYSIS_ID_CHARS+"}$");
+      compile("^[a-zA-Z0-9]{1}[a-zA-Z0-9-_]{2,"+(MAX_ANALYSIS_ID_CHARS-1)+"}$");
 
   private static final Map<String, Pattern> PREFIX_PATTERN = ImmutableMap.<String, Pattern> builder()
       .put(compilePattern(Prefixes.DONOR_ID_PREFIX))
