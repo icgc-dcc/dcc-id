@@ -129,3 +129,18 @@ auth:
     # Multiplier that defines value of consequent timeouts before the next retry. 
     # E.g. TIMEOUT(n) = TIMEOUT(n-1) * MULTIPLIER
     multiplier: 2.0
+
+
+---
+###################################################################################################
+# Test
+###################################################################################################
+
+# Spring
+spring:
+  profiles:
+    include: [development]
+  cache:
+    type: none
+
+
