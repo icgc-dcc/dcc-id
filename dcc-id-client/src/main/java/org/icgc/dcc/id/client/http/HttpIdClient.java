@@ -37,6 +37,8 @@ import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static java.lang.String.format;
+import static java.util.Objects.isNull;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
@@ -309,21 +311,39 @@ public class HttpIdClient implements IdClient {
     return getResponse(request, RetryContext.create(clientConfig));
   }
 
+  private static boolean isClientError(int statusCode){
+    return statusCode >= 400 && statusCode < 500;
+  }
+  private static boolean isServerError(int statusCode){
+    return statusCode >= 500 && statusCode < 600;
+  }
+
   private static Optional<String> getResponse(WebResource request, RetryContext retryContext) {
     try {
       val response = request.get(ClientResponse.class);
+      val statusCode = response.getStatus();
       verifyNonRetriableErrors(response);
 
-      if (response.getStatus() == NOT_FOUND.getStatusCode()) {
+      if (statusCode == NOT_FOUND.getStatusCode()) {
         return Optional.empty();
-      }
-
-      if (response.getStatus() == SERVICE_UNAVAILABLE.getStatusCode()) {
+      } else if (statusCode == SERVICE_UNAVAILABLE.getStatusCode()) {
         return retryFailedRequest(request, retryContext);
+      } else if (isClientError(statusCode) || isServerError(statusCode)){
+
+        val errorFamily = isClientError(statusCode) ? "CLIENT" : "SERVER";
+        val responseStatus = response.getClientResponseStatus();
+        String messageSuffix = "";
+        if (!isNull(responseStatus)){
+          messageSuffix = ": "+responseStatus.getReasonPhrase();
+        }
+        log.info("{} Error requesting {}, {}: {}",
+            errorFamily, request, retryContext, statusCode);
+        throw new IdentifierException(
+            format("A %s ERROR occurred requesting '%s' with the response status [%s]"+messageSuffix,
+                errorFamily, request, statusCode, response));
       }
 
       val entity = response.getEntity(String.class);
-
       return Optional.of(entity);
     } catch (ClientHandlerException e) {
       val cause = e.getCause();
