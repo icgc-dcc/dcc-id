@@ -225,6 +225,7 @@ public abstract class AbstractIdClientTest {
     getIdClient().getDonorId("s2", "p2");
   }
 
+
   protected static WebClientConfig createClientConfig(int maxRetries) {
     return WebClientConfig.builder()
         .serviceUrl("http://localhost:" + SERVER_PORT)
@@ -247,6 +248,7 @@ public abstract class AbstractIdClientTest {
     stubFor(get(urlEqualTo(requestUrl))
         .willReturn(responseModel));
   }
+
   private static void configureSuccessfulResponse(String requestUrl, String prefix) {
     stubFor(get(urlEqualTo(requestUrl))
         .willReturn(aResponse()
