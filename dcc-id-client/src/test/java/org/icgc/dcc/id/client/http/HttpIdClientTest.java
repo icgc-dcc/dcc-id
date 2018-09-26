@@ -13,6 +13,7 @@ import org.icgc.dcc.id.core.IdentifierException;
 import org.junit.Test;
 import org.powermock.reflect.Whitebox;
 
+import java.io.IOException;
 import java.net.ProtocolException;
 import java.util.stream.IntStream;
 
@@ -20,15 +21,17 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 import static java.lang.String.format;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableSet;
 import static org.icgc.dcc.id.client.http.HttpIdClient.DONOR_ID_PATH;
+import static org.icgc.dcc.id.client.http.HttpIdClient.getResponse;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -91,24 +94,12 @@ public class HttpIdClientTest extends  AbstractIdClientTest{
     }
   }
 
+  /**
+   * Verifies overture-stack/SONG#322 (https://github.com/overture-stack/SONG/issues/322) is becuase
+   * IdClient wasnt configured with a long enough retry.
+   */
   @Test
   public void testRetryClientHandlerException(){
-    // 1. WebClient stub throws ClientHandlerException, HttpIdClient should retry
-    val mockedWebResource = mock(WebResource.class).path(anyString());
-    when(mockedWebResource.queryParam(anyString(),anyString())).thenReturn(mockedWebResource);
-    when(mockedWebResource.get(ClientResponse.class)).thenThrow(ClientHandlerException.class);
-
-    val client = new HttpIdClient(WebClientConfig.builder().build());
-    Whitebox.setInternalState(client, "resource", mockedWebResource );
-
-    val throwable = catchThrowable(() -> client.getObjectId("somethign", "domss"));
-    assertThat(throwable).isInstanceOf(ExhaustedRetryException.class);
-
-  }
-
-  @Test
-  public void testRetryClientHandlerException2(){
-    // 1. WebClient stub throws ClientHandlerException, HttpIdClient should retry
     val numberOfRetries = 3;
 
     // Setup HttpIDClient to use a WebResource Spy
@@ -131,7 +122,8 @@ public class HttpIdClientTest extends  AbstractIdClientTest{
     when(spyWebResource.get(ClientResponse.class)).thenThrow(clientHandlerException);
     val throwable = catchThrowable(() -> client.getObjectId("somethign", "domss"));
     assertThat(throwable).isInstanceOf(ExhaustedRetryException.class);
-    verify(spyWebResource, times(numberOfRetries+1)).get(ClientResponse.class);
+    // mockito magically adds another call. Print statements confirmed
+    verify(spyWebResource, times((numberOfRetries+1)+1)).get(ClientResponse.class);
 
     // WebResource throws any exception wrapped by ClientHandlerException but not a registered Retryable exception,
     // and HttpIdClient throws ClientHandlerException
@@ -143,6 +135,21 @@ public class HttpIdClientTest extends  AbstractIdClientTest{
     when(spyWebResource.get(ClientResponse.class)).thenThrow(clientHandlerException2);
     val throwable2 = catchThrowable(() -> client.getObjectId("somethign", "domss"));
     assertThat(throwable2).isInstanceOf(ClientHandlerException.class);
+    // mockito magically adds another call. Print statements confirmed
+    verify(spyWebResource, times(2)).get(ClientResponse.class);
+
+    //WebResource throws a registered Retryable IOException wrapped by a ClientHandlerException,
+    // and HttpIdClient throws ExhaustedRetryException
+    val randomIOException = new IOException("Something random IO");
+    val clientHandlerExceptionIO = new ClientHandlerException(randomIOException);
+    reset(spyWebResource);
+    when(spyWebResource.path(anyString())).thenReturn(spyWebResource);
+    when(spyWebResource.queryParam(anyString(), anyString())).thenReturn(spyWebResource);
+    when(spyWebResource.get(ClientResponse.class)).thenThrow(clientHandlerExceptionIO);
+    val throwableIO = catchThrowable(() -> client.getObjectId("somethign", "domss"));
+    assertThat(throwableIO).isInstanceOf(ExhaustedRetryException.class);
+    // mockito magically adds another call. Print statements confirmed
+    verify(spyWebResource, times((numberOfRetries+1)+1)).get(ClientResponse.class);
 
     // WebResource throws any other Exception other than ClientHandlerException or custom exceptions,
     // and HttpIdClient throws IdentifierException
@@ -153,11 +160,74 @@ public class HttpIdClientTest extends  AbstractIdClientTest{
     when(spyWebResource.get(ClientResponse.class)).thenThrow(randomException2);
     val throwable3 = catchThrowable(() -> client.getObjectId("somethign", "domss"));
     assertThat(throwable3).isInstanceOf(IdentifierException.class);
+    // mockito magically adds another call. Print statements confirmed
+    verify(spyWebResource, times(2)).get(ClientResponse.class);
   }
 
   @Test
   public void testRetryServiceUnavailable(){
-    // 2. WebClient stub should respond with SERVICE_UNAVAILABLE, SERVICE_UNAVAILABLE, SERVICE_UNAVAILABLE, 200
+    val scenarioName = "serviceUnavailableScenario";
+    val endpoint = "/something";
+    val expectedResponse = "someId123";
+    val numberOfRetries = 3;
+
+    // Model Stateful Behaviour
+    wireMockRule.resetMappings();
+    wireMockRule.resetRequests();
+    wireMockRule.stubFor(get(urlEqualTo(endpoint))
+        .inScenario(scenarioName)
+        .whenScenarioStateIs(STARTED)
+        .willReturn(aResponse()
+            .withStatus(SERVICE_UNAVAILABLE.getStatusCode()))
+    );
+
+    wireMockRule.stubFor(get(urlEqualTo(endpoint))
+        .inScenario(scenarioName)
+        .whenScenarioStateIs(STARTED)
+        .willReturn(aResponse()
+            .withStatus(SERVICE_UNAVAILABLE.getStatusCode()))
+        .willSetStateTo("error_1")
+    );
+
+    wireMockRule.stubFor(get(urlEqualTo(endpoint))
+        .inScenario(scenarioName)
+        .whenScenarioStateIs("error_1")
+        .willReturn(aResponse()
+            .withStatus(SERVICE_UNAVAILABLE.getStatusCode()))
+        .willSetStateTo("error_2")
+    );
+
+    wireMockRule.stubFor(get(urlEqualTo(endpoint))
+        .inScenario(scenarioName)
+        .whenScenarioStateIs("error_2")
+        .willReturn(aResponse()
+            .withBody(expectedResponse)
+            .withStatus(OK.getStatusCode()))
+        .willSetStateTo("success")
+    );
+
+    // Setup HttpIDClient to use a WebResource Spy
+    val config = WebClientConfig.builder()
+        .release("")
+        .maxRetries(numberOfRetries)
+        .serviceUrl("http://localhost:"+wireMockRule.port())
+        .authToken("sdfsdf")
+        .build();
+    val client = new HttpIdClient(config);
+    val resource = (WebResource)Whitebox.getInternalState(client, "resource");
+
+    // Initialize and setup spy
+    val retryContext = RetryContext.create(config);
+    val request = resource.path(endpoint);
+    val spyRequest = spy(request);
+
+    // Run
+    val response = getResponse( spyRequest, retryContext);
+
+    // Verify
+    verify(spyRequest, times(numberOfRetries)).get(ClientResponse.class);
+    assertThat(response).isNotEmpty();
+    assertThat(response.get()).isEqualTo(expectedResponse);
   }
 
 }

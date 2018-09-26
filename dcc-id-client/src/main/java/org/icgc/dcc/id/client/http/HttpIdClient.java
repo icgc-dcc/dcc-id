@@ -82,7 +82,8 @@ public class HttpIdClient implements IdClient {
       SocketTimeoutException.class,
       ConnectTimeoutException.class,
       SocketException.class ,
-      ProtocolException.class
+      ProtocolException.class,
+      IOException.class
   );
 
   private static final List<Response.Status> NON_RETRIABLE_ERRORS = ImmutableList.of(
@@ -335,12 +336,8 @@ public class HttpIdClient implements IdClient {
     return statusCode >= 500 && statusCode < 600;
   }
 
-  private static int count = 0;
-
-  private static Optional<String> getResponse(WebResource request, RetryContext retryContext) {
+  static Optional<String> getResponse(WebResource request, RetryContext retryContext) {
     try {
-      count++;
-      log.info("Call {}", count);
       val response = request.get(ClientResponse.class);
       val statusCode = response.getStatus();
       verifyNonRetriableErrors(response);
