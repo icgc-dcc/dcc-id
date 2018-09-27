@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.id.client.http;
 
+import com.google.common.collect.ImmutableList;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientHandlerException;
 import com.sun.jersey.api.client.ClientResponse;
@@ -30,9 +31,12 @@ import org.icgc.dcc.id.client.http.webclient.WebClientConfig;
 import org.icgc.dcc.id.core.ExhaustedRetryException;
 import org.icgc.dcc.id.core.IdentifierException;
 
+import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.net.ProtocolException;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.util.List;
 import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkState;
@@ -73,6 +77,20 @@ public class HttpIdClient implements IdClient {
   public final static String MUTATION_EXPORT_PATH = "/mutation/export";
   public final static String ANALYSIS_EXPORT_PATH = "/analysis/export";
   public final static String FILE_EXPORT_PATH = "/file/export";
+
+  private static final List<Class<? extends Throwable>> RETRIABLE_EXCEPTIONS = ImmutableList.of(
+      SocketTimeoutException.class,
+      ConnectTimeoutException.class,
+      SocketException.class ,
+      ProtocolException.class,
+      IOException.class
+  );
+
+  private static final List<Response.Status> NON_RETRIABLE_ERRORS = ImmutableList.of(
+      UNAUTHORIZED,
+      FORBIDDEN,
+      INTERNAL_SERVER_ERROR
+  );
 
 
   /**
@@ -318,7 +336,7 @@ public class HttpIdClient implements IdClient {
     return statusCode >= 500 && statusCode < 600;
   }
 
-  private static Optional<String> getResponse(WebResource request, RetryContext retryContext) {
+  static Optional<String> getResponse(WebResource request, RetryContext retryContext) {
     try {
       val response = request.get(ClientResponse.class);
       val statusCode = response.getStatus();
@@ -336,8 +354,8 @@ public class HttpIdClient implements IdClient {
         if (!isNull(responseStatus)){
           messageSuffix = ": "+responseStatus.getReasonPhrase();
         }
-        log.info("{} Error requesting {}, {}: {}",
-            errorFamily, request, retryContext, statusCode);
+        log.info("{} Error requesting {}, {}: "+statusCode,
+            errorFamily, request, retryContext);
         throw new IdentifierException(
             format("A %s ERROR occurred requesting '%s' with the response status [%s]"+messageSuffix,
                 errorFamily, request, statusCode, response));
@@ -347,12 +365,18 @@ public class HttpIdClient implements IdClient {
       return Optional.of(entity);
     } catch (ClientHandlerException e) {
       val cause = e.getCause();
-      if (retryContext.isRetry() && isRetryException(cause)) {
-        log.info("{}", e.getMessage());
+      if (isRetryException(cause)){
+        if (retryContext.isRetry()){
+          log.info("{}", e.getMessage());
+          return getResponse(request, waitBeforeRetry(retryContext));
+        }
 
-        return getResponse(request, waitBeforeRetry(retryContext));
+        val exhaustedRetryException = new ExhaustedRetryException();
+        exhaustedRetryException.initCause(cause);
+        log.error("Failed to request ID because of exhausted retries. Cause: {}:  Request: {}",
+            cause.getClass().getCanonicalName(), cause.getMessage(), request);
+        throw exhaustedRetryException;
       }
-
       throw e;
     } catch (ExhaustedRetryException e) {
       log.error("Failed to request ID because of exhaused retries. Request: {}", request);
@@ -373,17 +397,15 @@ public class HttpIdClient implements IdClient {
   }
 
   private static boolean isRetryException(Throwable cause) {
-    return cause instanceof SocketTimeoutException || cause instanceof ConnectTimeoutException
-        || cause instanceof SocketException;
+    return RETRIABLE_EXCEPTIONS.stream().anyMatch(x -> cause.getClass() == x);
   }
+
 
   /**
    * @throws IdentifierException
    */
   private static void verifyNonRetriableErrors(ClientResponse response) {
-    if (response.getStatus() == UNAUTHORIZED.getStatusCode()
-        || response.getStatus() == FORBIDDEN.getStatusCode()
-        || response.getStatus() == INTERNAL_SERVER_ERROR.getStatusCode()) {
+    if (NON_RETRIABLE_ERRORS.stream().anyMatch(x -> x.getStatusCode() == response.getStatus())){
       throw new IdentifierException(response.getEntity(String.class));
     }
   }
