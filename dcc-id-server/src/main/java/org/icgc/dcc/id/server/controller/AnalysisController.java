@@ -52,10 +52,16 @@ public class AnalysisController {
     return analysisService.analysisId(create, submittedAnalysisId);
   }
 
+
   @RequestMapping(value = "/export", method = GET)
   public void export(HttpServletResponse response) throws IOException {
     response.setContentType("text/tsv");
     exportService.exportAnalysisIds(response.getOutputStream());
+  }
+
+  @RequestMapping(value = "/unique", method = GET)
+  public String generateUniqueAnalysisId(){
+    return analysisService.generateUniqueAnalysisId();
   }
 
 }

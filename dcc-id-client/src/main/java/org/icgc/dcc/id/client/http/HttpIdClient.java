@@ -21,6 +21,7 @@ import com.google.common.collect.ImmutableList;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientHandlerException;
 import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.ClientResponse.Status;
 import com.sun.jersey.api.client.WebResource;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -45,7 +46,6 @@ import static java.lang.String.format;
 import static java.util.Objects.isNull;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static org.icgc.dcc.id.client.http.RetryContext.waitBeforeRetry;
@@ -70,6 +70,7 @@ public class HttpIdClient implements IdClient {
   public final static String FILE_ID_PATH = "/file/id";
   public final static String OBJECT_ID_PATH = "/object/id";
   public final static String ANALYSIS_ID_PATH = "/analysis/id";
+  public final static String GENERATE_UNIQUE_UUID_PATH = "/analysis/unique";
 
   public final static String DONOR_EXPORT_PATH = "/donor/export";
   public final static String SPECIMEN_EXPORT_PATH = "/specimen/export";
@@ -130,6 +131,16 @@ public class HttpIdClient implements IdClient {
     checkState(!isNullOrEmpty(analysisId),
         "Failed to create analysis id. submittedAnalysisId: '%s'" ,
         submittedAnalysisId);
+    return analysisId;
+  }
+
+  @Override
+  public String generateUniqueAnalysisId() {
+    val request = resource
+        .path(GENERATE_UNIQUE_UUID_PATH);
+    val analysisId = getResponse(request).get();
+    checkState(!isNullOrEmpty(analysisId),
+        "Failed to create a random analysis id");
     return analysisId;
   }
 
@@ -342,7 +353,7 @@ public class HttpIdClient implements IdClient {
       val statusCode = response.getStatus();
       verifyNonRetriableErrors(response);
 
-      if (statusCode == NOT_FOUND.getStatusCode()) {
+      if (statusCode == Status.NOT_FOUND.getStatusCode()) {
         return Optional.empty();
       } else if (statusCode == SERVICE_UNAVAILABLE.getStatusCode()) {
         return retryFailedRequest(request, retryContext);
