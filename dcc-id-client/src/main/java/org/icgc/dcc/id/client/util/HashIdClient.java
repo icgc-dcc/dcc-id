@@ -1,18 +1,18 @@
 /*
  * Copyright (c) 2016 The Ontario Institute for Cancer Research. All rights reserved.
- *                                                                                                               
+ *
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
- * You should have received a copy of the GNU General Public License along with                                  
- * this program. If not, see <http://www.gnu.org/licenses/>.                                                     
- *                                                                                                               
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY                           
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES                          
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT                           
- * SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,                                
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED                          
- * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;                               
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER                              
- * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
+ * You should have received a copy of the GNU General Public License along with
+ * this program. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
+ * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 package org.icgc.dcc.id.client.util;
@@ -23,6 +23,7 @@ import com.google.common.hash.HashFunction;
 import lombok.val;
 import org.icgc.dcc.common.core.util.UUID5;
 import org.icgc.dcc.id.client.core.IdClient;
+import org.icgc.dcc.id.core.IdentifierException;
 import org.icgc.dcc.id.core.Prefixes;
 
 import java.io.IOException;
@@ -34,6 +35,7 @@ import static com.google.common.base.Joiner.on;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static com.google.common.hash.Hashing.md5;
+import static java.lang.String.format;
 import static org.icgc.dcc.id.core.Prefixes.DONOR_ID_PREFIX;
 import static org.icgc.dcc.id.core.Prefixes.MUTATION_ID_PREFIX;
 import static org.icgc.dcc.id.core.Prefixes.SAMPLE_ID_PREFIX;
@@ -51,6 +53,7 @@ public class HashIdClient implements IdClient {
    */
   private static final HashFunction MD5 = md5();
   private static final Joiner JOINER = on(":");
+  private static final int RETRY_LIMIT = 1000;
 
   private final boolean persistInMemory;
   private final Set<String> ids = Sets.newHashSet();
@@ -92,6 +95,24 @@ public class HashIdClient implements IdClient {
     return submittedAnalysisId;
   }
 
+  @Override
+  public String generateUniqueAnalysisId() {
+    String id = generateRandomUuid();
+    int retryCount = 0;
+    while (retryCount < RETRY_LIMIT){
+      if (!ids.contains(id)){
+        validateUuid(id);
+        return id;
+      }
+      retryCount++;
+      id = generateRandomUuid();
+    }
+    throw new IdentifierException(format("Exceeded max retry count of %s for finding unique analysis id", RETRY_LIMIT));
+  }
+
+  private String generateRandomUuid(){
+    return timeBasedGenerator().generate().toString();
+  }
 
   @Override
   public Optional<String> getDonorId(String submittedDonorId, String submittedProjectId) {
