@@ -18,72 +18,27 @@
 package org.icgc.dcc.id.server.config;
 
 import lombok.NoArgsConstructor;
-import org.icgc.dcc.id.server.repository.AnalysisRepository;
-import org.icgc.dcc.id.server.repository.DonorRepository;
-import org.icgc.dcc.id.server.repository.FileRepository;
-import org.icgc.dcc.id.server.repository.MutationRepository;
-import org.icgc.dcc.id.server.repository.ProjectRepository;
-import org.icgc.dcc.id.server.repository.SampleRepository;
-import org.icgc.dcc.id.server.repository.SpecimenRepository;
-import org.skife.jdbi.v2.DBI;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
-import javax.sql.DataSource;
-
-/**
- * Data access layer configuration.
- */
 @NoArgsConstructor
+@Profile("secure")
 @Configuration
-public class RepositoryConfig {
+public class ScopeConfig {
+  /**
+   * Scope required for ID creation.
+   */
+  @Value("${auth.server.prefix}")
+  protected String scopePrefix;
+  @Value("${auth.server.suffix}")
+  protected String scopeSuffix;
 
-  @Autowired
-  private DataSource dataSource;
-
-  @Bean
-  public DBI dbi() {
-    return new DBI(dataSource);
+  public String getScope() {
+    return scopePrefix + "." + scopeSuffix;
   }
 
-  @Bean
-  public ProjectRepository projectRepository() {
-    return dbi().open(ProjectRepository.class);
-  }
-
-  @Bean
-  public AnalysisRepository analysisRepository() {
-    return dbi().open(AnalysisRepository.class);
-  }
-
-  @Bean
-  public DonorRepository donorRepository() {
-    return dbi().open(DonorRepository.class);
-  }
-
-  @Bean
-  public SpecimenRepository specimenRepository() {
-    return dbi().open(SpecimenRepository.class);
-  }
-
-  @Bean
-  public SampleRepository sampleRepository() {
-    return dbi().open(SampleRepository.class);
-  }
-
-  @Bean
-  public MutationRepository mutationRepository() {
-    return dbi().open(MutationRepository.class);
-  }
-
-  @Bean
-  public FileRepository fileRepository() {
-    return dbi().open(FileRepository.class);
-  }
-
-  @Bean
-  ScopeConfig scopeConfig() {
-    return new ScopeConfig();
+  public String getTemplate() {
+    return scopePrefix + ".%s." + scopeSuffix;
   }
 }

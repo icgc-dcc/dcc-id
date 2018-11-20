@@ -32,7 +32,6 @@ import org.springframework.context.annotation.Profile;
 @Profile("development")
 @Configuration
 public class SSLConfig {
-
   @PostConstruct
   public void init() {
     SSLCertificateValidation.disable();

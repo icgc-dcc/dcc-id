@@ -26,6 +26,10 @@
 spring:
   profiles.active: production
 
+auth:
+  server:
+    prefix: id
+    suffix: create.WRITE
 # Server
 server:
   port: 8443

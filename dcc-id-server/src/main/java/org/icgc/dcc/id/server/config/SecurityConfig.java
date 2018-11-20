@@ -19,6 +19,9 @@ package org.icgc.dcc.id.server.config;
 
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.security.oauth2.method.OAuth2MethodSecurityConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
@@ -48,19 +51,13 @@ import java.lang.annotation.Target;
 public class SecurityConfig extends ResourceServerConfigurerAdapter {
 
   /**
-   * Scope required for ID creation.
-   */
-  public static final String AUTHORIZATION_SCOPE = "id.create";
-  public static final String PROJECT_ID_SCOPE_TEMPLATE = "id.%s.create";
-
-  /**
    * Expression for ID access.
    * <p>
    * Read-only access is always allowed. Creation requires pre-configured scope.
    */
   public static final String AUTHORIZATION_EXPRESSION =
-      "#create == false or #oauth2.hasScope('" + AUTHORIZATION_SCOPE + "') " +
-          "or #oauth2.hasScope(T(String).format('" + PROJECT_ID_SCOPE_TEMPLATE + "', #submittedProjectId))";
+    "#create == false or #oauth2.hasScope(@scopeConfig.getScope()) " +
+      "or #oauth2.hasScope(T(String).format(@scopeConfig.getTemplate(), #submittedProjectId))";
 
   @Override
   @SneakyThrows
@@ -83,6 +80,14 @@ public class SecurityConfig extends ResourceServerConfigurerAdapter {
     @Override
     protected MethodSecurityExpressionHandler createExpressionHandler() {
       // Enable #oauth expressions
+      return getHandler();
+    }
+
+    // Force the OAuth2 Security Handler to include a @Bean handler,
+    // so that we can use them in Spring Expression Language expressions,
+    // like the one we have in AUTHORIZATION_EXPRESSION
+    @Bean
+    public OAuth2MethodSecurityExpressionHandler getHandler() {
       return new OAuth2MethodSecurityExpressionHandler();
     }
 
