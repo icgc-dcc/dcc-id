@@ -29,7 +29,7 @@ spring:
 auth:
   server:
     prefix: id
-    suffix: create.WRITE
+    suffix: WRITE
 # Server
 server:
   port: 8443
