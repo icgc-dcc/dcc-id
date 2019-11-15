@@ -1,0 +1,8 @@
+target
+Dockerfile
+docker-compose.yml
+README.md
+Makefile
+.*
+!.git
+!.mvn

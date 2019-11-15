@@ -1,0 +1,66 @@
+version: '3.7'
+services:
+  db:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+      target: db
+    environment:
+      POSTGRES_DB: dcc_identifier
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+  server:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+      target: server
+    environment:
+      AUTH_SERVER_URL: http://ego-api:8080/o/check_token/
+      AUTH_SERVER_CLIENTID: dcc-id
+      AUTH_SERVER_CLIENTSECRET: dccidsecret
+      AUTH_SERVER_PREFIX: id
+      AUTH_SERVER_SUFFIX: WRITE
+      AUTH_CONNECTION_MAXRETRIES: 5
+      AUTH_CONNECTION_INITIALBACKOFF: 15000
+      AUTH_CONNECTION_MULTIPLIER: 2.0
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db/dcc_identifier
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_PROFILES_ACTIVE: secure
+    restart: always
+    depends_on:
+      - db
+      - ego-api
+    expose:
+      - "8080"
+    ports:
+      - "8080:8080"
+  ego-api:
+    image: "overture/ego:latest"
+    environment:
+      SERVER_PORT: 8080
+      SPRING_DATASOURCE_URL: jdbc:postgresql://ego-postgres:5432/ego?stringtype=unspecified
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_FLYWAY_ENABLED: "true"
+      SPRING_FLYWAY_LOCATIONS: "classpath:flyway/sql,classpath:db/migration"
+      SPRING_PROFILES: demo, auth
+    expose:
+      - "8080"
+    ports:
+      - "9082:8080"
+    command: java -jar /srv/ego/install/ego.jar
+    depends_on:
+      - ego-postgres
+  ego-postgres:
+    image: postgres:9.5
+    environment:
+      - POSTGRES_DB=ego
+      - POSTGRES_PASSWORD=password
+    expose:
+      - "5432"
+    volumes:
+      - "./docker/ego-init:/docker-entrypoint-initdb.d"
+    ports:
+      - "9444:5432"
+
