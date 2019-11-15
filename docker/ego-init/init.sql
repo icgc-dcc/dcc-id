@@ -294,6 +294,7 @@ ALTER TABLE public.userpermission OWNER TO postgres;
 --
 
 COPY public.egoapplication (name, clientid, clientsecret, redirecturi, description, status, id, type) FROM stdin;
+dcc-id	dccid	dccidsecret	string	\N	APPROVED	832f17b3-0fc0-4f2d-b23a-9b4df80143ad	CLIENT
 \.
 
 

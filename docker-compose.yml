@@ -16,7 +16,7 @@ services:
       target: server
     environment:
       AUTH_SERVER_URL: http://ego-api:8080/o/check_token/
-      AUTH_SERVER_CLIENTID: dcc-id
+      AUTH_SERVER_CLIENTID: dccid
       AUTH_SERVER_CLIENTSECRET: dccidsecret
       AUTH_SERVER_PREFIX: id
       AUTH_SERVER_SUFFIX: WRITE
